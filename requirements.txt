@@ -1,0 +1,2 @@
+pillow
+wxPython~=4.2.2
