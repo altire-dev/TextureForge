@@ -73,11 +73,11 @@ class TextureForgeGUI(TextureForgeMF):
         # =================================
         # TEST
         # =================================
-        self.dp_outputdir.SetPath(".\\")
-        slots = self.get_slots()
-        slots[0].set_texture_path("C:\\OneDrive\\dev\\Skyrim\\projects\\Lordbound\\projects\\garshakur\\assets\\archway\\exports\\textures\\archway_trim_metal_m.png")
-        slots[0].set_texture_path(r"F:\OneDrive\dev\Skyrim\projects\Lordbound\projects\garshakur\assets\archway\exports\textures\\archway_trim_metal_d.png")
-        slots[0].set_compression_selection("BC1_UNORM")
+        # self.dp_outputdir.SetPath(".\\")
+        # slots = self.get_slots()
+        # slots[0].set_texture_path("C:\\OneDrive\\dev\\Skyrim\\projects\\Lordbound\\projects\\garshakur\\assets\\archway\\exports\\textures\\archway_trim_metal_m.png")
+        # slots[0].set_texture_path(r"F:\OneDrive\dev\Skyrim\projects\Lordbound\projects\garshakur\assets\archway\exports\textures\\archway_trim_metal_d.png")
+        # slots[0].set_compression_selection("BC1_UNORM")
 
     # ===================================================================================================
     # Event Handles

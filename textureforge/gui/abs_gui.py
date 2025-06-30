@@ -39,9 +39,6 @@ class TextureForgeMF ( wx.Frame ):
         self.btn_new_project = wx.Button( self.m_panel4, wx.ID_ANY, _(u"New Project"), wx.DefaultPosition, wx.DefaultSize, 0 )
         bSizer5.Add( self.btn_new_project, 0, wx.ALL, 5 )
 
-        self.m_filePicker3 = wx.FilePickerCtrl( self.m_panel4, wx.ID_ANY, wx.EmptyString, _(u"Select a file"), _(u"*.*"), wx.DefaultPosition, wx.DefaultSize, wx.FLP_OVERWRITE_PROMPT|wx.FLP_SAVE )
-        bSizer5.Add( self.m_filePicker3, 0, wx.ALL, 5 )
-
         self.btn_load_project = wx.Button( self.m_panel4, wx.ID_ANY, _(u"Load Project"), wx.DefaultPosition, wx.DefaultSize, 0 )
         bSizer5.Add( self.btn_load_project, 0, wx.ALL, 5 )
 
