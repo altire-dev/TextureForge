@@ -20,7 +20,7 @@ _ = gettext.gettext
 class TextureForgeMF ( wx.Frame ):
 
     def __init__( self, parent ):
-        wx.Frame.__init__ ( self, parent, id = wx.ID_ANY, title = _(u"Image Forge"), pos = wx.DefaultPosition, size = wx.Size( 1084,506 ), style = wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL )
+        wx.Frame.__init__ ( self, parent, id = wx.ID_ANY, title = _(u"Texture Forge"), pos = wx.DefaultPosition, size = wx.Size( 1084,506 ), style = wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL )
 
         self.SetSizeHints( wx.DefaultSize, wx.DefaultSize )
 
@@ -38,6 +38,9 @@ class TextureForgeMF ( wx.Frame ):
 
         self.btn_new_project = wx.Button( self.m_panel4, wx.ID_ANY, _(u"New Project"), wx.DefaultPosition, wx.DefaultSize, 0 )
         bSizer5.Add( self.btn_new_project, 0, wx.ALL, 5 )
+
+        self.m_filePicker3 = wx.FilePickerCtrl( self.m_panel4, wx.ID_ANY, wx.EmptyString, _(u"Select a file"), _(u"*.*"), wx.DefaultPosition, wx.DefaultSize, wx.FLP_OVERWRITE_PROMPT|wx.FLP_SAVE )
+        bSizer5.Add( self.m_filePicker3, 0, wx.ALL, 5 )
 
         self.btn_load_project = wx.Button( self.m_panel4, wx.ID_ANY, _(u"Load Project"), wx.DefaultPosition, wx.DefaultSize, 0 )
         bSizer5.Add( self.btn_load_project, 0, wx.ALL, 5 )
@@ -83,7 +86,7 @@ class TextureForgeMF ( wx.Frame ):
         sbSizer3.Add( bSizer81, 0, wx.EXPAND, 5 )
 
 
-        sbSizer3.Add( ( 0, 0), 1, wx.EXPAND, 5 )
+        sbSizer3.Add( ( 0, 0), 2, wx.EXPAND, 5 )
 
         self.btn_convert = wx.Button( sbSizer3.GetStaticBox(), wx.ID_ANY, _(u"CONVERT"), wx.DefaultPosition, wx.DefaultSize, 0 )
         sbSizer3.Add( self.btn_convert, 1, wx.ALL|wx.EXPAND, 10 )
@@ -109,12 +112,20 @@ class TextureForgeMF ( wx.Frame ):
         self.label_texture_path = wx.StaticText( sb_input_maps.GetStaticBox(), wx.ID_ANY, _(u"Texture Path"), wx.DefaultPosition, wx.DefaultSize, 0 )
         self.label_texture_path.Wrap( -1 )
 
-        sb_column_headings.Add( self.label_texture_path, 5, wx.ALL, 5 )
+        sb_column_headings.Add( self.label_texture_path, 3, wx.ALL|wx.RESERVE_SPACE_EVEN_IF_HIDDEN, 5 )
 
         self.label_compression_type = wx.StaticText( sb_input_maps.GetStaticBox(), wx.ID_ANY, _(u"Compression"), wx.DefaultPosition, wx.DefaultSize, 0 )
         self.label_compression_type.Wrap( -1 )
 
         sb_column_headings.Add( self.label_compression_type, 2, wx.ALL, 5 )
+
+        self.label_status = wx.StaticText( sb_input_maps.GetStaticBox(), wx.ID_ANY, _(u"Status"), wx.DefaultPosition, wx.DefaultSize, 0 )
+        self.label_status.Wrap( -1 )
+
+        sb_column_headings.Add( self.label_status, 1, wx.ALL, 5 )
+
+
+        sb_column_headings.Add( ( 0, 0), 1, wx.EXPAND, 5 )
 
 
         bSizer3.Add( sb_column_headings, 0, wx.EXPAND, 5 )
@@ -132,12 +143,20 @@ class TextureForgeMF ( wx.Frame ):
         sb_slot1.Add( self.m_checkBox1, 1, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 10 )
 
         self.m_filePicker2 = wx.FilePickerCtrl( self.slots_scrollbox, wx.ID_ANY, wx.EmptyString, _(u"Select a file"), _(u"*.*"), wx.DefaultPosition, wx.DefaultSize, wx.FLP_DEFAULT_STYLE|wx.FLP_FILE_MUST_EXIST|wx.FLP_OPEN|wx.FLP_SMALL )
-        sb_slot1.Add( self.m_filePicker2, 5, wx.ALL, 5 )
+        sb_slot1.Add( self.m_filePicker2, 3, wx.ALL|wx.EXPAND, 5 )
 
         m_choice1Choices = []
         self.m_choice1 = wx.Choice( self.slots_scrollbox, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, m_choice1Choices, 0 )
         self.m_choice1.SetSelection( 0 )
         sb_slot1.Add( self.m_choice1, 2, wx.ALL, 5 )
+
+        self.label_status = wx.StaticText( self.slots_scrollbox, wx.ID_ANY, _(u"Waiting"), wx.DefaultPosition, wx.DefaultSize, 0 )
+        self.label_status.Wrap( -1 )
+
+        sb_slot1.Add( self.label_status, 1, wx.ALL, 5 )
+
+        self.m_button8 = wx.Button( self.slots_scrollbox, wx.ID_ANY, _(u"MyButton"), wx.DefaultPosition, wx.DefaultSize, 0 )
+        sb_slot1.Add( self.m_button8, 1, wx.ALL, 5 )
 
 
         self.sb_slots.Add( sb_slot1, 0, wx.EXPAND, 5 )
@@ -172,7 +191,7 @@ class TextureForgeMF ( wx.Frame ):
         bSizer7.Add( self.m_panel3, 3, wx.EXPAND |wx.ALL, 5 )
 
 
-        bSizer2.Add( bSizer7, 1, wx.EXPAND, 5 )
+        bSizer2.Add( bSizer7, 2, wx.EXPAND, 5 )
 
         self.m_panel5 = wx.Panel( self.m_panel1, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
         sbSizer5 = wx.StaticBoxSizer( wx.StaticBox( self.m_panel5, wx.ID_ANY, _(u"Output Log") ), wx.VERTICAL )
@@ -229,12 +248,20 @@ class AbsInputMapSlot ( wx.Panel ):
         bSizer17.Add( self.cb_enabled, 1, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 10 )
 
         self.fp_map_path = wx.FilePickerCtrl( self.m_panel10, wx.ID_ANY, wx.EmptyString, _(u"Select a file"), _(u"*.*"), wx.DefaultPosition, wx.DefaultSize, wx.FLP_DEFAULT_STYLE|wx.FLP_FILE_MUST_EXIST|wx.FLP_OPEN|wx.FLP_SMALL )
-        bSizer17.Add( self.fp_map_path, 5, wx.ALL, 5 )
+        bSizer17.Add( self.fp_map_path, 3, wx.ALL, 5 )
 
         choice_compressionChoices = []
         self.choice_compression = wx.Choice( self.m_panel10, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, choice_compressionChoices, 0 )
         self.choice_compression.SetSelection( 0 )
         bSizer17.Add( self.choice_compression, 2, wx.ALL, 5 )
+
+        self.label_status = wx.StaticText( self.m_panel10, wx.ID_ANY, _(u"Waiting..."), wx.DefaultPosition, wx.DefaultSize, 0 )
+        self.label_status.Wrap( -1 )
+
+        bSizer17.Add( self.label_status, 1, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
+
+        self.btn_delete = wx.Button( self.m_panel10, wx.ID_ANY, _(u"Delete"), wx.DefaultPosition, wx.DefaultSize, 0 )
+        bSizer17.Add( self.btn_delete, 1, wx.ALL, 5 )
 
 
         self.m_panel10.SetSizer( bSizer17 )
