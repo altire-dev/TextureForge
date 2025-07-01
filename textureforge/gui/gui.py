@@ -43,6 +43,8 @@ class TextureForgeGUI(TextureForgeMF):
         '''
         self._version = version
         self._author = author
+        self._columns = {}
+        self._slots = []
 
         # Initialise Frame
         super(TextureForgeGUI, self).__init__(None)
@@ -67,8 +69,22 @@ class TextureForgeGUI(TextureForgeMF):
         '''
         Initialses the UI, updating and overriding any properties
         '''
+        # ============================================================================================================
+        # Store Columns
+        # ============================================================================================================
+        self._columns["enabled"]        = self.col_enabled
+        self._columns["texture_path"]   = self.col_texture_path
+        self._columns["compression"]    = self.col_compression
+        self._columns["status"]         = self.col_status
+        self._columns["actions"]        = self.col_actions
+
+        # ============================================================================================================
+        # Initialise Slots
+        # ============================================================================================================
+
         self.clear_slots()
         self.add_slot()
+        self.text_output_log.Clear()
 
         # =================================
         # TEST
@@ -91,6 +107,15 @@ class TextureForgeGUI(TextureForgeMF):
         '''
 
         # ===================================================================================================
+        # Validate Inputs
+        # ===================================================================================================
+        # Validate output directory
+        output_dir = self.dp_outputdir.GetPath()
+        if not os.path.isdir(output_dir):
+            self.write_to_log("ERROR: Output Directory must be set to a valid folder path")
+            return
+
+        # ===================================================================================================
         # Update UI
         # ===================================================================================================
         self.btn_convert.SetLabel("CANCEL")
@@ -98,17 +123,6 @@ class TextureForgeGUI(TextureForgeMF):
         self.write_to_log("[+] Starting conversion process")
         for slot in self.get_slots():
             slot.set_status("Waiting")
-
-        # Process Inputs
-        output_dir = self.dp_outputdir.GetPath()
-
-        # ===================================================================================================
-        # Validate Inputs
-        # ===================================================================================================
-        # Validate output directory
-        if not os.path.isdir(output_dir):
-            self.write_to_log("ERROR: Output Directory must be set to a valid folder path")
-            return
 
         # ===================================================================================================
         # Process Slots
@@ -283,19 +297,22 @@ class TextureForgeGUI(TextureForgeMF):
         :param event: Button event, if called from a click
         :type event: wx.Event
         '''
-        self.sb_slots.Clear(True)
-        self.sb_slots.Layout()
         self.write_to_log("Clearing Slots")
 
-    def delete_slot(self, slot):
-        '''
-        Deletes a Slot from the Input Map table
-        :param slot:
-        :return:
-        '''
+        for column in self._columns:
+            self._columns[column].Clear(True)
 
-        self.sb_slots.Detach(slot)
-        slot.Destroy()
+        self.slots_table.Layout()
+        self._slots.clear()
+
+    def on_slot_deleted(self, slot):
+        '''
+        Handler: A specific slot was deleted
+        :param slot: The slot that was deleted
+        :type slot: InputMapSlot
+        '''
+        self._slots.remove(slot)
+        self.write_to_log("Slot deleted")
 
     def add_slot(self, event=None):
         '''
@@ -306,14 +323,10 @@ class TextureForgeGUI(TextureForgeMF):
         :returns: The newly added slot instance
         :rtype: InputMapSlot
         '''
-        slot = InputMapSlot(self, self.slots_scrollbox)
+        slot = InputMapSlot(self, self.slots_table, self._columns)
         slot.set_compression_options(DDSProcessor.COMPRESSION_FORMATS)
-
-        self.sb_slots.Add(slot, 0, wx.EXPAND)
-        self.slots_scrollbox.Layout()
-        self.slots_scrollbox.FitInside()
         self.write_to_log("[+] Slot Added")
-
+        self._slots.append(slot)
         return slot
 
     def get_slots(self):
@@ -323,13 +336,7 @@ class TextureForgeGUI(TextureForgeMF):
         :return: The current Input Map Slots
         :rtype: list[InputMapSlot]
         '''
-        slots = []
-        # Process Slots
-        for child in self.sb_slots.GetChildren():
-            if isinstance(child.GetWindow(), InputMapSlot):
-                slots.append(child.GetWindow())
-        return slots
-
+        return self._slots
 
     def write_to_log(self, msg):
         '''
