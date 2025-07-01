@@ -1,2 +1,3 @@
 pillow
 wxPython~=4.2.2
+pyinstaller~=6.11.1
