@@ -1,7 +1,7 @@
 pyinstaller ^
     --noupx^
     -F --noconsole --clean ^
-    -n TextureForge-v1.0.0^
+    -n TextureForge-v0.1.0^
     --upx-dir=..\resources\upx-4.2.4-win64^
     --icon=.\textureforge\resources\icon.ico^
     --add-data textureforge\resources\icon.ico:resources^
