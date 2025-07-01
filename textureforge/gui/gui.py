@@ -13,7 +13,8 @@ from ..converters import DDSConverter
 from ..converters import ConversionOperation
 from ..processors import DDSProcessor
 from .input_map_slot import InputMapSlot
-from textureforge.gui.abs_gui import TextureForgeMF
+from ..utils import utils
+from .abs_gui import TextureForgeMF
 
 # ===================================================================================================
 # Texture Forge GUI Class
@@ -64,6 +65,7 @@ class TextureForgeGUI(TextureForgeMF):
         self.Bind(wx.EVT_BUTTON, self.add_slot, self.btn_add_slot)
         self.Bind(wx.EVT_BUTTON, self._on_save_project, self.btn_save_project)
         self.Bind(wx.EVT_BUTTON, self._on_load_project, self.btn_load_project)
+        self.Bind(wx.EVT_BUTTON, self._on_open_output_dir, self.btn_open_output_dir)
 
     def _init_ui(self):
         '''
@@ -71,6 +73,11 @@ class TextureForgeGUI(TextureForgeMF):
         '''
 
         self.SetTitle("TextureForge v%s" % self._version)
+        # Update Icon
+        if not self.GetParent():
+            icon = wx.Icon()
+            icon.CopyFromBitmap(wx.Bitmap(self._get_icon_path()))
+            self.SetIcon(icon)
 
         # ============================================================================================================
         # Store Columns
@@ -101,6 +108,16 @@ class TextureForgeGUI(TextureForgeMF):
     # ===================================================================================================
     # Event Handles
     # ===================================================================================================
+    def _on_open_output_dir(self, event):
+        '''
+        Handler: Open Output Directory buttion clicked
+
+        :param event: wx Btn Event
+        :type event: wx.Event
+        '''
+        output_dir = self.dp_outputdir.GetPath()
+        utils.open_explorer(output_dir)
+
     def _on_start_conversion(self, event):
         '''
         Handler: Start Conversion
@@ -115,7 +132,7 @@ class TextureForgeGUI(TextureForgeMF):
         # Validate output directory
         output_dir = self.dp_outputdir.GetPath()
         if not os.path.isdir(output_dir):
-            self.write_to_log("ERROR: Output Directory must be set to a valid folder path")
+            self.write_to_log("Output Directory must be set to a valid folder path", True)
             return
 
         # ===================================================================================================
@@ -123,7 +140,7 @@ class TextureForgeGUI(TextureForgeMF):
         # ===================================================================================================
         self.btn_convert.SetLabel("CANCEL")
         self.text_output_log.Clear()
-        self.write_to_log("[+] Starting conversion process")
+        self.write_to_log("Starting conversion process")
         for slot in self.get_slots():
             slot.set_status("Waiting")
 
@@ -139,7 +156,7 @@ class TextureForgeGUI(TextureForgeMF):
             texture_path    = slot.get_texture_path()
             compression     = slot.get_compression_type()
             if not os.path.isfile(texture_path):
-                self.write_to_log("[!!] Texture path file is invalid, or does not exist: %s" % texture_path)
+                self.write_to_log("Texture path file is invalid, or does not exist: %s" % texture_path, True)
                 return
 
             target_maps.append((texture_path, compression, slot))
@@ -161,7 +178,7 @@ class TextureForgeGUI(TextureForgeMF):
         Handler: DDS Conversion has finished
         '''
         self.btn_convert.SetLabel("CONVERT")
-        self.write_to_log("[+] Conversion Finished")
+        self.write_to_log("Conversion Finished")
 
 
     def _on_save_project(self, event):
@@ -176,7 +193,7 @@ class TextureForgeGUI(TextureForgeMF):
         # Open Save Modal
         with wx.FileDialog(
             self, "Save Project",
-            wildcard="TextureForge Project File (*.tfp)|*.tfp",
+            wildcard="TextureForge Project (*.tfp)|*.tfp",
             style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT
         ) as file_dialog:
             # Dialog cancelled
@@ -189,7 +206,7 @@ class TextureForgeGUI(TextureForgeMF):
         # ===================================================================================================
         project_name = self.text_project_name.GetValue()
         if not project_name:
-            self.write_to_log("ERROR: Project name must be set")
+            self.write_to_log("Project name must be set", True)
             return
         output_dir = self.dp_outputdir.GetPath()
 
@@ -210,7 +227,7 @@ class TextureForgeGUI(TextureForgeMF):
         # Open Load Modal
         with wx.FileDialog(
                 self, "Select Project File",
-                wildcard="TextureForge Project File (*.tfp)|*.tfp",
+                wildcard="TextureForge Project (*.tfp)|*.tfp",
                 style=wx.FD_OPEN | wx.FLP_FILE_MUST_EXIST
         ) as file_dialog:
             # Dialog cancelled
@@ -273,8 +290,12 @@ class TextureForgeGUI(TextureForgeMF):
         # ===================================================================================================
         # Read File
         # ===================================================================================================
-        with open(path, "r") as project_file:
-            project_data = json.load(project_file)
+        try:
+            with open(path, "r") as project_file:
+                project_data = json.load(project_file)
+        except Exception as ex:
+            self.write_to_log("Unable to load project at %s --> %s" % (project_data, ex))
+            return
 
         # ===================================================================================================
         # Load Project Settings
@@ -328,7 +349,7 @@ class TextureForgeGUI(TextureForgeMF):
         '''
         slot = InputMapSlot(self, self.slots_table, self._columns)
         slot.set_compression_options(DDSProcessor.COMPRESSION_FORMATS)
-        self.write_to_log("[+] Slot Added")
+        self.write_to_log("Slot Added")
         self._slots.append(slot)
         return slot
 
@@ -341,15 +362,38 @@ class TextureForgeGUI(TextureForgeMF):
         '''
         return self._slots
 
-    def write_to_log(self, msg):
+    def write_to_log(self, msg, error=False):
         '''
         Writes a message to the Output Log
 
         :param msg: The message to write
         :type msg: str
         '''
-        log_msg = "%s\n" % msg
+        prefix = "[-]"
+        if error:
+            prefix = "[!!] ERROR: "
+        log_msg = "%s %s\n" % (prefix, msg)
         self.text_output_log.write(log_msg)
+
+    def _get_icon_path(self):
+        '''
+        Gets the path to the GUI Icon (.ico) file
+
+        :return: The path to the GUI Icon File
+        :rtype: str
+        '''
+        icon_path = None
+        tf_root = utils.get_tf_root_path()
+
+        if "_MEI" in __file__: # (Packed)
+            icon_path = os.path.join(
+                os.path.dirname(tf_root), "resources", "icon.ico"
+            )
+        else: # (Not Packed)
+            icon_path = os.path.join(tf_root, "resources", "icon.ico")
+
+        return icon_path
+
 
 
 

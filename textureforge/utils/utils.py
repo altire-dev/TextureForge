@@ -6,6 +6,7 @@
 # Imports: External
 # ============================================================================================================
 import os
+import subprocess
 
 # ============================================================================================================
 # Imports: Internal
@@ -14,6 +15,16 @@ import os
 # ============================================================================================================
 # Utilities: General Helper functions
 # ============================================================================================================
+def open_explorer(path):
+    '''
+    Opens Windows Explorer at the specified path
+
+    :param path: The target path
+    :type path: str
+    '''
+    cmd = 'explorer "%s"' % path
+    subprocess.Popen(cmd)
+
 def get_texconv_path():
     '''
     Gets the path to the TexConv executable

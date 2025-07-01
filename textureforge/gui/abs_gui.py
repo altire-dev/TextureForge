@@ -30,10 +30,10 @@ class TextureForgeMF ( wx.Frame ):
         bSizer19 = wx.BoxSizer( wx.VERTICAL )
 
         self.Notebook = wx.Notebook( self.m_panel6, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, 0 )
-        self.m_panel1 = wx.Panel( self.Notebook, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
+        self.tab_dds_converter = wx.Panel( self.Notebook, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
         bSizer2 = wx.BoxSizer( wx.VERTICAL )
 
-        self.m_panel4 = wx.Panel( self.m_panel1, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
+        self.m_panel4 = wx.Panel( self.tab_dds_converter, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
         bSizer5 = wx.BoxSizer( wx.HORIZONTAL )
 
         self.btn_new_project = wx.Button( self.m_panel4, wx.ID_ANY, _(u"New Project"), wx.DefaultPosition, wx.DefaultSize, 0 )
@@ -53,7 +53,7 @@ class TextureForgeMF ( wx.Frame ):
 
         bSizer7 = wx.BoxSizer( wx.VERTICAL )
 
-        self.m_panel2 = wx.Panel( self.m_panel1, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
+        self.m_panel2 = wx.Panel( self.tab_dds_converter, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
         sbSizer3 = wx.StaticBoxSizer( wx.StaticBox( self.m_panel2, wx.ID_ANY, _(u"Project Settings") ), wx.VERTICAL )
 
         bSizer8 = wx.BoxSizer( wx.HORIZONTAL )
@@ -82,13 +82,31 @@ class TextureForgeMF ( wx.Frame ):
 
         sbSizer3.Add( bSizer81, 0, wx.EXPAND, 5 )
 
+        bSizer24 = wx.BoxSizer( wx.HORIZONTAL )
+
+        self.btn_scan_folder = wx.Button( sbSizer3.GetStaticBox(), wx.ID_ANY, _(u"Scan Folder"), wx.DefaultPosition, wx.DefaultSize, 0 )
+        self.btn_scan_folder.SetMinSize( wx.Size( -1,35 ) )
+
+        bSizer24.Add( self.btn_scan_folder, 0, wx.ALL, 5 )
+
+
+        bSizer24.Add( ( 0, 0), 1, wx.EXPAND, 5 )
+
+        self.btn_open_output_dir = wx.Button( sbSizer3.GetStaticBox(), wx.ID_ANY, _(u"Open Output Folder"), wx.DefaultPosition, wx.DefaultSize, 0 )
+        self.btn_open_output_dir.SetMinSize( wx.Size( -1,35 ) )
+
+        bSizer24.Add( self.btn_open_output_dir, 0, wx.ALL, 5 )
+
+
+        sbSizer3.Add( bSizer24, 1, wx.EXPAND, 5 )
+
 
         self.m_panel2.SetSizer( sbSizer3 )
         self.m_panel2.Layout()
         sbSizer3.Fit( self.m_panel2 )
         bSizer7.Add( self.m_panel2, 0, wx.EXPAND |wx.ALL, 5 )
 
-        self.m_panel3 = wx.Panel( self.m_panel1, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
+        self.m_panel3 = wx.Panel( self.tab_dds_converter, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
         sb_input_maps = wx.StaticBoxSizer( wx.StaticBox( self.m_panel3, wx.ID_ANY, _(u"Input Maps") ), wx.VERTICAL )
 
         bSizer3 = wx.BoxSizer( wx.VERTICAL )
@@ -268,7 +286,7 @@ class TextureForgeMF ( wx.Frame ):
         bSizer14.Add( ( 0, 0), 1, wx.EXPAND, 5 )
 
         self.btn_add_slot = wx.Button( sb_input_maps.GetStaticBox(), wx.ID_ANY, _(u"Add Slot"), wx.DefaultPosition, wx.DefaultSize, 0 )
-        self.btn_add_slot.SetMinSize( wx.Size( -1,40 ) )
+        self.btn_add_slot.SetMinSize( wx.Size( -1,35 ) )
 
         bSizer14.Add( self.btn_add_slot, 0, wx.ALL, 5 )
 
@@ -287,7 +305,7 @@ class TextureForgeMF ( wx.Frame ):
 
         bSizer2.Add( bSizer7, 2, wx.EXPAND, 5 )
 
-        self.m_panel9 = wx.Panel( self.m_panel1, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
+        self.m_panel9 = wx.Panel( self.tab_dds_converter, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
         bSizer44 = wx.BoxSizer( wx.VERTICAL )
 
         self.m_gauge1 = wx.Gauge( self.m_panel9, wx.ID_ANY, 100, wx.DefaultPosition, wx.DefaultSize, wx.GA_HORIZONTAL )
@@ -305,7 +323,7 @@ class TextureForgeMF ( wx.Frame ):
         bSizer44.Fit( self.m_panel9 )
         bSizer2.Add( self.m_panel9, 0, wx.EXPAND |wx.ALL, 5 )
 
-        self.m_panel5 = wx.Panel( self.m_panel1, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
+        self.m_panel5 = wx.Panel( self.tab_dds_converter, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
         sbSizer5 = wx.StaticBoxSizer( wx.StaticBox( self.m_panel5, wx.ID_ANY, _(u"Output Log") ), wx.VERTICAL )
 
         self.text_output_log = wx.TextCtrl( sbSizer5.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.TE_MULTILINE|wx.TE_READONLY )
@@ -318,10 +336,10 @@ class TextureForgeMF ( wx.Frame ):
         bSizer2.Add( self.m_panel5, 1, wx.EXPAND |wx.ALL, 5 )
 
 
-        self.m_panel1.SetSizer( bSizer2 )
-        self.m_panel1.Layout()
-        bSizer2.Fit( self.m_panel1 )
-        self.Notebook.AddPage( self.m_panel1, _(u"DDS Converter"), False )
+        self.tab_dds_converter.SetSizer( bSizer2 )
+        self.tab_dds_converter.Layout()
+        bSizer2.Fit( self.tab_dds_converter )
+        self.Notebook.AddPage( self.tab_dds_converter, _(u"DDS Converter"), False )
 
         bSizer19.Add( self.Notebook, 1, wx.EXPAND |wx.ALL, 5 )
 
