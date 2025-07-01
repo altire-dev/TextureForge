@@ -28,6 +28,7 @@ class AbsTFTabDDSConverter ( wx.Panel ):
         bSizer5 = wx.BoxSizer( wx.HORIZONTAL )
 
         self.btn_new = wx.Button( self.m_panel4, wx.ID_ANY, _(u"New Project"), wx.DefaultPosition, wx.DefaultSize, 0 )
+        self.btn_new.Hide()
         self.btn_new.SetMinSize( wx.Size( -1,30 ) )
 
         bSizer5.Add( self.btn_new, 0, wx.ALL, 5 )
@@ -52,6 +53,7 @@ class AbsTFTabDDSConverter ( wx.Panel ):
         bSizer5.Add( ( 0, 0), 1, wx.EXPAND, 5 )
 
         self.btn_scan_folder = wx.Button( self.m_panel4, wx.ID_ANY, _(u"Scan Folder"), wx.DefaultPosition, wx.DefaultSize, 0 )
+        self.btn_scan_folder.SetBackgroundColour( wx.SystemSettings.GetColour( wx.SYS_COLOUR_WINDOW ) )
         self.btn_scan_folder.SetMinSize( wx.Size( -1,30 ) )
 
         bSizer5.Add( self.btn_scan_folder, 0, wx.ALL, 5 )
@@ -72,10 +74,10 @@ class AbsTFTabDDSConverter ( wx.Panel ):
         self.lbl_project_name = wx.StaticText( sbSizer3.GetStaticBox(), wx.ID_ANY, _(u"Name"), wx.DefaultPosition, wx.DefaultSize, 0 )
         self.lbl_project_name.Wrap( -1 )
 
-        bSizer8.Add( self.lbl_project_name, 1, wx.ALL, 5 )
+        bSizer8.Add( self.lbl_project_name, 1, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
 
         self.text_project_name = wx.TextCtrl( sbSizer3.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
-        bSizer8.Add( self.text_project_name, 1, wx.ALL, 5 )
+        bSizer8.Add( self.text_project_name, 2, wx.ALL, 5 )
 
 
         sbSizer3.Add( bSizer8, 0, wx.EXPAND, 5 )
@@ -85,10 +87,10 @@ class AbsTFTabDDSConverter ( wx.Panel ):
         self.lbl_output_dir = wx.StaticText( sbSizer3.GetStaticBox(), wx.ID_ANY, _(u"Output Directory"), wx.DefaultPosition, wx.DefaultSize, 0 )
         self.lbl_output_dir.Wrap( -1 )
 
-        bSizer81.Add( self.lbl_output_dir, 1, wx.ALL, 5 )
+        bSizer81.Add( self.lbl_output_dir, 1, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
 
         self.dp_outputdir = wx.DirPickerCtrl( sbSizer3.GetStaticBox(), wx.ID_ANY, wx.EmptyString, _(u"Select a folder"), wx.DefaultPosition, wx.DefaultSize, wx.DIRP_DEFAULT_STYLE|wx.DIRP_DIR_MUST_EXIST )
-        bSizer81.Add( self.dp_outputdir, 1, wx.ALL, 5 )
+        bSizer81.Add( self.dp_outputdir, 2, wx.ALL, 5 )
 
 
         sbSizer3.Add( bSizer81, 0, wx.EXPAND, 5 )
@@ -179,7 +181,7 @@ class AbsTFTabDDSConverter ( wx.Panel ):
         sbSizer21.Add( self.col_texture_path, 1, wx.EXPAND, 5 )
 
 
-        bSizer33.Add( sbSizer21, 2, wx.EXPAND, 5 )
+        bSizer33.Add( sbSizer21, 1, wx.EXPAND, 5 )
 
         sbSizer22 = wx.BoxSizer( wx.VERTICAL )
 
@@ -211,7 +213,7 @@ class AbsTFTabDDSConverter ( wx.Panel ):
         sbSizer22.Add( self.col_compression, 1, wx.EXPAND, 5 )
 
 
-        bSizer33.Add( sbSizer22, 1, wx.EXPAND, 5 )
+        bSizer33.Add( sbSizer22, 0, wx.EXPAND, 5 )
 
         bSizer29 = wx.BoxSizer( wx.VERTICAL )
 
@@ -318,24 +320,24 @@ class AbsTFTabDDSConverter ( wx.Panel ):
         bSizer7.Add( self.m_panel3, 1, wx.EXPAND |wx.ALL, 5 )
 
 
-        bSizer2.Add( bSizer7, 2, wx.EXPAND, 5 )
+        bSizer2.Add( bSizer7, 3, wx.EXPAND, 5 )
 
         self.m_panel9 = wx.Panel( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
-        bSizer44 = wx.BoxSizer( wx.VERTICAL )
+        sbSizer4 = wx.StaticBoxSizer( wx.StaticBox( self.m_panel9, wx.ID_ANY, wx.EmptyString ), wx.VERTICAL )
 
-        self.m_gauge1 = wx.Gauge( self.m_panel9, wx.ID_ANY, 100, wx.DefaultPosition, wx.DefaultSize, wx.GA_HORIZONTAL )
-        self.m_gauge1.SetValue( 0 )
-        bSizer44.Add( self.m_gauge1, 0, wx.ALL|wx.EXPAND, 5 )
-
-        self.btn_convert = wx.Button( self.m_panel9, wx.ID_ANY, _(u"CONVERT"), wx.DefaultPosition, wx.DefaultSize, 0 )
+        self.btn_convert = wx.Button( sbSizer4.GetStaticBox(), wx.ID_ANY, _(u"CONVERT"), wx.DefaultPosition, wx.DefaultSize, 0 )
         self.btn_convert.SetMinSize( wx.Size( -1,30 ) )
 
-        bSizer44.Add( self.btn_convert, 1, wx.ALL|wx.EXPAND, 10 )
+        sbSizer4.Add( self.btn_convert, 1, wx.ALL|wx.EXPAND, 5 )
+
+        self.progressbar = wx.Gauge( sbSizer4.GetStaticBox(), wx.ID_ANY, 100, wx.DefaultPosition, wx.DefaultSize, wx.GA_HORIZONTAL )
+        self.progressbar.SetValue( 0 )
+        sbSizer4.Add( self.progressbar, 0, wx.ALL|wx.EXPAND, 5 )
 
 
-        self.m_panel9.SetSizer( bSizer44 )
+        self.m_panel9.SetSizer( sbSizer4 )
         self.m_panel9.Layout()
-        bSizer44.Fit( self.m_panel9 )
+        sbSizer4.Fit( self.m_panel9 )
         bSizer2.Add( self.m_panel9, 0, wx.EXPAND |wx.ALL, 5 )
 
         self.m_panel5 = wx.Panel( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )

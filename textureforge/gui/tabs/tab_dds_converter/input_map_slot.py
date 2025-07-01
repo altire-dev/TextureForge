@@ -24,14 +24,16 @@ class InputMapSlot:
     STATUS_COMPLETE     = 2
     STATUS_FAILED       = 3
     STATUS_DISABLED     = 4
+    STATUS_CANCELLED    =   5
 
     # Status Labels
     STATUS_LABELS = {
-        STATUS_WAITING: "Waiting",
+        STATUS_WAITING:     "Waiting",
         STATUS_IN_PROGRESS: "In Progress",
-        STATUS_COMPLETE: "Complete",
-        STATUS_FAILED: "Failed",
-        STATUS_DISABLED: "Disabled"
+        STATUS_COMPLETE:    "Complete",
+        STATUS_FAILED:      "Failed",
+        STATUS_DISABLED:    "Disabled",
+        STATUS_CANCELLED:   "Cancelled"
     }
 
     # Colours
@@ -40,6 +42,7 @@ class InputMapSlot:
     COLOR_COMPLETE      = wx.Colour(0, 153, 0)
     COLOR_FAILED        = wx.Colour(255, 26, 26)
     COLOR_DISABLED      = wx.Colour(100, 100, 100)
+    COLOR_CANCELLED     = wx.Colour(230, 184, 0)
 
     # ============================================================================================================
     # Methods
@@ -236,6 +239,9 @@ class InputMapSlot:
         elif status == self.STATUS_DISABLED:
             self._label_status.SetLabel("Disabled")
             self._label_status.SetForegroundColour(self.COLOR_DISABLED)
+        elif status == self.STATUS_CANCELLED:
+            self._label_status.SetLabel("Cancelled")
+            self._label_status.SetForegroundColour(self.COLOR_CANCELLED)
 
     def set_texture_path(self, path):
         '''

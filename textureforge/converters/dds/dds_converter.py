@@ -51,13 +51,15 @@ class DDSConverter(TextureConverter):
 
         for map in self._target_maps:
             path, compression, slot = map[0], map[1], map[2]
-            slot.set_status(slot.STATUS_IN_PROGRESS)
+            if self._stop_event.isSet():
+                slot.set_status(slot.STATUS_CANCELLED)
+                self._tfgui.on_conversion_cancelled()
+                return
 
-            print("Converting image file: %s --> %s (%s)" % (path, self._output_dir, compression))
+            slot.set_status(slot.STATUS_IN_PROGRESS)
             dds_processor.convert_to_dds(path, self._output_dir, compression)
             slot.set_status(slot.STATUS_COMPLETE)
             self._tfgui.on_map_converted(slot)
-
 
         self._tfgui.on_conversion_finished()
 

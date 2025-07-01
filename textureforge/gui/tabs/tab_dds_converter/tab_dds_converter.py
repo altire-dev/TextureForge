@@ -42,6 +42,8 @@ class TFTabDDSConverter(AbsTFTabDDSConverter):
         self._columns = {}
         self._slots = []
         self._project_file = None
+        self._count_maps_converted = 0
+        self._dds_converter = None
 
         # Initialise Frame
         super(TFTabDDSConverter, self).__init__(parent)
@@ -135,6 +137,7 @@ class TFTabDDSConverter(AbsTFTabDDSConverter):
             self.btn_open_output_dir.Enable()
         else:
             self.btn_open_output_dir.Disable()
+        self.dp_outputdir.GetTextCtrl().SetInsertionPointEnd()
 
 
     def _on_open_output_dir(self, event):
@@ -146,6 +149,23 @@ class TFTabDDSConverter(AbsTFTabDDSConverter):
         '''
         output_dir = self.dp_outputdir.GetPath()
         utils.open_explorer(output_dir)
+
+    def _on_stop_conversion(self, event):
+        '''
+        Handler: Stop Conversion
+
+        :param event: wx Btn Event
+        :type event: wx.Event
+        '''
+        if self._dds_converter:
+            self._dds_converter.stop_conversion()
+
+    def on_conversion_cancelled(self):
+        '''
+        Handler: Conversion was cancelled by the user
+        '''
+        self.on_conversion_finished(True)
+        self.progressbar.SetValue(0)
 
     def _on_start_conversion(self, event):
         '''
@@ -167,8 +187,11 @@ class TFTabDDSConverter(AbsTFTabDDSConverter):
         # ===================================================================================================
         # Update UI
         # ===================================================================================================
+        self.Unbind(wx.EVT_BUTTON, self.btn_convert)
+        self.Bind(wx.EVT_BUTTON, self._on_stop_conversion, self.btn_convert)
         self.btn_convert.SetLabel("CANCEL")
         self.text_output_log.Clear()
+        self.progressbar.SetValue(0)
         self.write_to_log("Starting conversion process")
         for slot in self.get_slots():
             slot.set_status(slot.STATUS_WAITING)
@@ -190,8 +213,9 @@ class TFTabDDSConverter(AbsTFTabDDSConverter):
 
             target_maps.append((texture_path, compression, slot))
 
-        dds_converter = DDSConverter(self, output_dir, target_maps)
-        dds_converter.start()
+        self.progressbar.SetRange(len(target_maps))
+        self._dds_converter = DDSConverter(self, output_dir, target_maps)
+        self._dds_converter.start()
 
     def on_map_converted(self, slot):
         '''
@@ -200,14 +224,23 @@ class TFTabDDSConverter(AbsTFTabDDSConverter):
         :param slot: The Slot of the Texture Map that was converted
         :type slot: InputMapSlot
         '''
-        pass
+        self._count_maps_converted += 1
+        self.progressbar.SetValue(self._count_maps_converted)
 
-    def on_conversion_finished(self):
+    def on_conversion_finished(self, cancelled=False):
         '''
         Handler: DDS Conversion has finished
+
+        :param cancelled: Whether the operation was cancelled or not
+        :type cancelled: bool
         '''
+        self.Unbind(wx.EVT_BUTTON, self.btn_convert)
+        self.Bind(wx.EVT_BUTTON, self._on_start_conversion, self.btn_convert)
         self.btn_convert.SetLabel("CONVERT")
-        self.write_to_log("Conversion Finished")
+        if cancelled:
+            self.write_to_log("Conversion cancelled")
+        else:
+            self.write_to_log("Conversion finished")
 
     def _on_save(self, event):
         '''
@@ -405,6 +438,7 @@ class TFTabDDSConverter(AbsTFTabDDSConverter):
         # ===================================================================================================
         self.text_project_name.SetValue(project_data["project_name"])
         self.dp_outputdir.SetPath(project_data["output_dir"])
+        self.dp_outputdir.GetTextCtrl().SetInsertionPointEnd()
 
         # ===================================================================================================
         # Load Slots
