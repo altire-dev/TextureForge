@@ -1,5 +1,6 @@
 # Project Files
 .idea/
+*.spec
 
 # Binary Files
 *.pyc
