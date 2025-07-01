@@ -50,7 +50,13 @@ def get_bin_path():
     :returns: Path to the TextureForge "bin" directory
     :rtype: str
     '''
-    return os.path.join(get_tf_root_path(), "bin")
+    tf_root = get_tf_root_path()
+    base_dir = tf_root
+
+    if "_MEI" in __file__:  # (Packed)
+        base_dir = os.path.dirname(tf_root)
+
+    return os.path.join(base_dir, "bin")
 
 def get_tf_root_path():
     '''

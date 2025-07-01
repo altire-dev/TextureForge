@@ -245,7 +245,6 @@ class InputMapSlot:
         '''
         self.fp_texture_path.SetPath(path)
         self.fp_texture_path.GetTextCtrl().SetInsertionPointEnd()
-        print("HMM")
 
     def set_compression_selection(self, _type):
         '''
