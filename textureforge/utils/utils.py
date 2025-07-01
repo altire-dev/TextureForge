@@ -89,8 +89,8 @@ def get_file_extension_from_path(path):
     extension = None
     filename = get_path_filename(path)
     if filename:
-        if filename.split(".") > 1:
-            extension.split(".")[-1]
+        if len(filename.split(".")) > 1:
+            extension = filename.split(".")[-1].lower()
     return extension
 
 
