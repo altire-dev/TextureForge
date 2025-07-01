@@ -1,0 +1,508 @@
+# ===================================================================================================
+# Imports: External
+# ===================================================================================================
+import wx
+import os
+import time
+import json
+
+# ===================================================================================================
+# Imports: Internal
+# ===================================================================================================
+from .input_map_slot import InputMapSlot
+from textureforge.converters import DDSConverter
+from textureforge.converters import ConversionOperation
+from textureforge.processors import DDSProcessor
+from textureforge.components.image_discovery import ImageDiscoverer
+from textureforge.utils import utils
+
+from .abs_tab_dds_converter import AbsTFTabDDSConverter
+
+# ===================================================================================================
+# TF Tab: DDS Converter
+# ===================================================================================================
+class TFTabDDSConverter(AbsTFTabDDSConverter):
+    '''
+    Texture Forge Tab: DDS Converter
+    '''
+
+
+    # ===================================================================================================
+    # Properties
+    # ===================================================================================================
+
+
+    # ===================================================================================================
+    # Methods
+    # ===================================================================================================
+    def __init__(self, parent):
+        '''
+        Constructor
+        '''
+        self._columns = {}
+        self._slots = []
+        self._project_file = None
+
+        # Initialise Frame
+        super(TFTabDDSConverter, self).__init__(parent)
+
+        # Set up GUI
+        self._bind_events()
+        self._init_ui()
+
+    def _bind_events(self):
+        '''
+        Binds GUI Events
+        '''
+
+        # Button events
+        self.Bind(wx.EVT_BUTTON, self._on_start_conversion, self.btn_convert)
+
+        # Button Events - Slot Management
+        self.Bind(wx.EVT_BUTTON, self.clear_slots, self.btn_clear_slots)
+        self.Bind(wx.EVT_BUTTON, self.add_slot, self.btn_add_slot)
+
+        # Button Events - Project
+        self.Bind(wx.EVT_BUTTON, self._on_new, self.btn_new)
+        self.Bind(wx.EVT_BUTTON, self._on_save, self.btn_save)
+        self.Bind(wx.EVT_BUTTON, self._on_save_as, self.btn_save_as)
+        self.Bind(wx.EVT_BUTTON, self._on_load, self.btn_load)
+        self.Bind(wx.EVT_BUTTON, self._on_scan_folder, self.btn_scan_folder)
+        self.Bind(wx.EVT_BUTTON, self._on_open_output_dir, self.btn_open_output_dir)
+
+        # File/Dir Change Events
+        self.Bind(wx.EVT_DIRPICKER_CHANGED, self._on_output_dir_changed, self.dp_outputdir)
+
+    def _init_ui(self):
+        '''
+        Initialses the UI, updating and overriding any properties
+        '''
+
+        # ============================================================================================================
+        # Store Columns
+        # ============================================================================================================
+        self._columns["enabled"]        = self.col_enabled
+        self._columns["texture_path"]   = self.col_texture_path
+        self._columns["compression"]    = self.col_compression
+        self._columns["status"]         = self.col_status
+        self._columns["actions"]        = self.col_actions
+
+        # ============================================================================================================
+        # Initialise Slots
+        # ============================================================================================================
+
+        self.clear_slots()
+        self.add_slot()
+        self.text_output_log.Clear()
+
+    # ===================================================================================================
+    # Event Handles
+    # ===================================================================================================
+    def _on_scan_folder(self, event):
+        '''
+        Handler: Scan Folder button pressed
+
+        :param event: wx Btn Event
+        :type event: wx.Event
+        '''
+
+        # Open Load Modal
+        with wx.DirDialog(
+                self, "Select Target Folder",
+                style=wx.DIRP_DEFAULT_STYLE | wx.DIRP_DIR_MUST_EXIST
+        ) as dir_dialog:
+            # Dialog cancelled
+            if dir_dialog.ShowModal() == wx.ID_CANCEL:
+                return
+            dir_path = dir_dialog.GetPath()
+
+        # ===================================================================================================
+        # Perform Save
+        # ===================================================================================================
+        self.write_to_log("Scanning Directory: %s" % dir_path)
+        self.scan_dir(dir_path)
+
+
+    def _on_output_dir_changed(self, event):
+        '''
+        Handler: Output Directory changed
+
+        :param event: wx Btn Event
+        :type event: wx.Event
+        '''
+        output_dir = self.dp_outputdir.GetPath()
+        if os.path.isdir(output_dir):
+            self.btn_open_output_dir.Enable()
+        else:
+            self.btn_open_output_dir.Disable()
+
+
+    def _on_open_output_dir(self, event):
+        '''
+        Handler: Open Output Directory buttion clicked
+
+        :param event: wx Btn Event
+        :type event: wx.Event
+        '''
+        output_dir = self.dp_outputdir.GetPath()
+        utils.open_explorer(output_dir)
+
+    def _on_start_conversion(self, event):
+        '''
+        Handler: Start Conversion
+
+        :param event: wx Btn Event
+        :type event: wx.Event
+        '''
+
+        # ===================================================================================================
+        # Validate Inputs
+        # ===================================================================================================
+        # Validate output directory
+        output_dir = self.dp_outputdir.GetPath()
+        if not os.path.isdir(output_dir):
+            self.write_to_log("Output Directory must be set to a valid folder path", True)
+            return
+
+        # ===================================================================================================
+        # Update UI
+        # ===================================================================================================
+        self.btn_convert.SetLabel("CANCEL")
+        self.text_output_log.Clear()
+        self.write_to_log("Starting conversion process")
+        for slot in self.get_slots():
+            slot.set_status(slot.STATUS_WAITING)
+
+        # ===================================================================================================
+        # Process Slots
+        # ===================================================================================================
+        slots = self.get_slots()
+        target_maps = []
+        for slot in slots:
+            if not slot.is_enabled():
+                continue
+
+            texture_path    = slot.get_texture_path()
+            compression     = slot.get_compression_type()
+            if not os.path.isfile(texture_path):
+                self.write_to_log("Texture path file is invalid, or does not exist: %s" % texture_path, True)
+                return
+
+            target_maps.append((texture_path, compression, slot))
+
+        dds_converter = DDSConverter(self, output_dir, target_maps)
+        dds_converter.start()
+
+    def on_map_converted(self, slot):
+        '''
+        Handler: Texture Map successfully converted
+
+        :param slot: The Slot of the Texture Map that was converted
+        :type slot: InputMapSlot
+        '''
+        pass
+
+    def on_conversion_finished(self):
+        '''
+        Handler: DDS Conversion has finished
+        '''
+        self.btn_convert.SetLabel("CONVERT")
+        self.write_to_log("Conversion Finished")
+
+    def _on_save(self, event):
+        '''
+        Handler: Project Save Button clicked
+
+        :param event: Button event
+        :type event: wx.Event
+        '''
+
+        # ===================================================================================================
+        # Validate Input
+        # ===================================================================================================
+        project_name = self.text_project_name.GetValue()
+        if not project_name:
+            self.write_to_log("Project name must be set", True)
+            return
+        output_dir = self.dp_outputdir.GetPath()
+
+        # ===================================================================================================
+        # Perform Save
+        # ===================================================================================================
+        self.save_project(self._project_file)
+
+    def _on_save_as(self, event):
+        '''
+        Handler: Project Save As Button clicked
+
+        :param event: Button event
+        :type event: wx.Event
+        '''
+        save_path = None
+
+        # Open Save Modal
+        with wx.FileDialog(
+            self, "Save Project",
+            wildcard="TextureForge Project (*.tfp)|*.tfp",
+            style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT
+        ) as file_dialog:
+            # Dialog cancelled
+            if file_dialog.ShowModal() == wx.ID_CANCEL:
+                return
+            save_path = file_dialog.GetPath()
+
+        # ===================================================================================================
+        # Validate Input
+        # ===================================================================================================
+        project_name = self.text_project_name.GetValue()
+        if not project_name:
+            self.write_to_log("Project name must be set", True)
+            return
+        output_dir = self.dp_outputdir.GetPath()
+
+        # ===================================================================================================
+        # Perform Save
+        # ===================================================================================================
+        self.save_project(save_path)
+
+    def _on_load(self, event):
+        '''
+        Handler: Project Load Button clicked
+
+        :param event: Button event
+        :type event: wx.Event
+        '''
+        file_path = None
+
+        # Open Load Modal
+        with wx.FileDialog(
+                self, "Select Project File",
+                wildcard="TextureForge Project (*.tfp)|*.tfp",
+                style=wx.FD_OPEN | wx.FLP_FILE_MUST_EXIST
+        ) as file_dialog:
+            # Dialog cancelled
+            if file_dialog.ShowModal() == wx.ID_CANCEL:
+                return
+            file_path = file_dialog.GetPath()
+
+        # ===================================================================================================
+        # Perform Save
+        # ===================================================================================================
+        self.load_project(file_path)
+
+    def _on_new(self, event):
+        '''
+        Handler: New Project Button clicked
+
+        :param event: wx Button Event
+        :type event: wx.Event
+        '''
+
+        # Clear Input Data
+        self.text_project_name.Clear()
+        self.dp_outputdir.SetPath("")
+        self.clear_slots()
+
+        # Update Log
+        self.add_slot()
+        self.text_output_log.Clear()
+        self.write_to_log("New Project Initialised")
+
+    def on_slot_deleted(self, slot):
+        '''
+        Handler: A specific slot was deleted
+
+        :param slot: The slot that was deleted
+        :type slot: InputMapSlot
+        '''
+        self._slots.remove(slot)
+        self.write_to_log("Slot deleted")
+
+    # ===================================================================================================
+    # Helpers
+    # ===================================================================================================
+    def scan_dir(self, path):
+        '''
+        Scans a directory for image files to load
+
+        :param path: The path to the directory to scan
+        :type path: str
+        '''
+        id = ImageDiscoverer()
+
+        # Find directories
+        image_files = id.search_directory(path)
+        if len(image_files) == 0:
+            self.write_to_log("No images found in target directory")
+            return
+
+        self.clear_slots()
+        for image_file in image_files:
+            slot = self.add_slot()
+            slot.set_texture_path(image_file)
+
+        self.write_to_log("%s image(s) found" % len(image_files))
+
+
+
+
+    def save_project(self, path):
+        '''
+        Saves the project data to the specified path
+        
+        :param path: Path to the target save file
+        :type path: str
+        '''
+        
+        # ===================================================================================================
+        # Build Save Data
+        # ===================================================================================================
+        save_data = {
+            "save_version": "1",
+            "project_name": self.text_project_name.GetValue(),
+            "output_dir": self.dp_outputdir.GetPath(),
+            "slots": []
+        }
+
+        # ===================================================================================================
+        # Populate Slot data
+        # ===================================================================================================
+        for slot in self.get_slots():
+            slot_data = {
+                "enabled": slot.is_enabled(),
+                "texture_path": slot.get_texture_path(),
+                "compression": slot.get_compression_type()
+            }
+            save_data["slots"].append(slot_data)
+
+        with open(path, "w") as save_file:
+            json.dump(save_data, save_file)
+
+        self.set_project_file(path)
+        self.write_to_log("Project Saved: %s --> %s" % (save_data["project_name"], path))
+
+    def load_project(self, path):
+        '''
+        Loads project data from the TextureForge project file at the specified location
+
+        :param path: Path to the TextureForge project file to load
+        :type path: str
+        '''
+        self.write_to_log("Loading project file: %s" % path)
+
+        # ===================================================================================================
+        # Read File
+        # ===================================================================================================
+        try:
+            with open(path, "r") as project_file:
+                project_data = json.load(project_file)
+        except Exception as ex:
+            self.write_to_log("Unable to load project at %s --> %s" % (project_data, ex))
+            return
+
+        # ===================================================================================================
+        # Load Project Settings
+        # ===================================================================================================
+        self.text_project_name.SetValue(project_data["project_name"])
+        self.dp_outputdir.SetPath(project_data["output_dir"])
+
+        # ===================================================================================================
+        # Load Slots
+        # ===================================================================================================
+        self.clear_slots()
+        for slot_data in project_data["slots"]:
+            slot = self.add_slot()
+            slot.set_enabled(slot_data["enabled"])
+            slot.set_texture_path(slot_data["texture_path"])
+            slot.set_compression_selection(slot_data["compression"])
+
+        self.set_project_file(path)
+        self.write_to_log("Project Loaded: %s" % path)
+
+        
+    def clear_slots(self, event=None):
+        '''
+        Clears all slots from the slot table
+
+        :param event: Button event, if called from a click
+        :type event: wx.Event
+        '''
+        self.write_to_log("Clearing Slots")
+
+        for column in self._columns:
+            self._columns[column].Clear(True)
+
+        self.slots_table.Layout()
+        self._slots.clear()
+
+    def add_slot(self, event=None):
+        '''
+        Adds a new slot to the slot table
+
+        :param event: Button event, if called from a click
+        :type event: wx.Event
+        :returns: The newly added slot instance
+        :rtype: InputMapSlot
+        '''
+        slot = InputMapSlot(self, self.slots_table, self._columns)
+        slot.set_compression_options(DDSProcessor.COMPRESSION_FORMATS)
+        self.write_to_log("Slot Added")
+        self._slots.append(slot)
+        return slot
+
+    def get_slots(self):
+        '''
+        Gets the Input Map Slots
+
+        :return: The current Input Map Slots
+        :rtype: list[InputMapSlot]
+        '''
+        return self._slots
+
+    def write_to_log(self, msg, error=False):
+        '''
+        Writes a message to the Output Log
+
+        :param msg: The message to write
+        :type msg: str
+        '''
+        prefix = "[-]"
+        if error:
+            prefix = "[!!] ERROR: "
+        log_msg = "%s %s\n" % (prefix, msg)
+        self.text_output_log.write(log_msg)
+
+    def set_project_file(self, path):
+        '''
+        Sets the path to the project file for the current project
+
+        :param path: Path to the TextureForge project file (DDS Converter)
+        :type path: str
+        '''
+        self._project_file = path
+        self.btn_save.Enable()
+
+    def _get_icon_path(self):
+        '''
+        Gets the path to the GUI Icon (.ico) file
+
+        :return: The path to the GUI Icon File
+        :rtype: str
+        '''
+        icon_path = None
+        tf_root = utils.get_tf_root_path()
+
+        if "_MEI" in __file__: # (Packed)
+            icon_path = os.path.join(
+                os.path.dirname(tf_root), "resources", "icon.ico"
+            )
+        else: # (Not Packed)
+            icon_path = os.path.join(tf_root, "resources", "icon.ico")
+
+        return icon_path
+
+
+
+
+
+

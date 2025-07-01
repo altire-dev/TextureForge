@@ -16,7 +16,7 @@ class InputMapSlot:
     # ===================================================================================================
     # Properties
     # ===================================================================================================
-    MIN_CELL_SIZE = wx.Size(-1, 35)
+    MIN_CELL_SIZE = wx.Size(-1, 40)
 
     # Status Enum
     STATUS_WAITING      = 0
@@ -82,7 +82,7 @@ class InputMapSlot:
         self._create_cell(self._label_status, self._cols["status"], 0)
 
         # Actions (Buttons)
-        self.btn_delete = wx.Button(self._table, wx.ID_ANY, "Delete", wx.DefaultPosition)
+        self.btn_delete = wx.Button(self._table, wx.ID_ANY, "Delete", wx.DefaultPosition, wx.Size(-1, 30))
         self._create_cell(self.btn_delete, self._cols["actions"], 0)
 
         self.set_status(self.STATUS_WAITING)
@@ -90,6 +90,7 @@ class InputMapSlot:
         self.set_enabled(True)
 
         self._table.Layout()
+        self._table.FitInside()
 
         self.bind_events()
 
