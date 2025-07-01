@@ -69,6 +69,9 @@ class TextureForgeGUI(TextureForgeMF):
         '''
         Initialses the UI, updating and overriding any properties
         '''
+
+        self.SetTitle("TextureForge v%s" % self._version)
+
         # ============================================================================================================
         # Store Columns
         # ============================================================================================================
