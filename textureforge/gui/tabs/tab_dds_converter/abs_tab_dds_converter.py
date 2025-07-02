@@ -89,25 +89,27 @@ class AbsTFTabDDSConverter ( wx.Panel ):
 
         bSizer81.Add( self.lbl_output_dir, 1, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
 
+        bSizer22 = wx.BoxSizer( wx.HORIZONTAL )
+
         self.dp_outputdir = wx.DirPickerCtrl( sbSizer3.GetStaticBox(), wx.ID_ANY, wx.EmptyString, _(u"Select a folder"), wx.DefaultPosition, wx.DefaultSize, wx.DIRP_DEFAULT_STYLE|wx.DIRP_DIR_MUST_EXIST )
-        bSizer81.Add( self.dp_outputdir, 2, wx.ALL, 5 )
-
-
-        sbSizer3.Add( bSizer81, 0, wx.EXPAND, 5 )
-
-        self.m_staticline7 = wx.StaticLine( sbSizer3.GetStaticBox(), wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.LI_HORIZONTAL )
-        sbSizer3.Add( self.m_staticline7, 0, wx.EXPAND |wx.ALL, 10 )
-
-        bSizer24 = wx.BoxSizer( wx.HORIZONTAL )
-
-
-        bSizer24.Add( ( 0, 0), 1, wx.EXPAND, 5 )
+        bSizer22.Add( self.dp_outputdir, 2, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
 
         self.btn_open_output_dir = wx.Button( sbSizer3.GetStaticBox(), wx.ID_ANY, _(u"Open Output Folder"), wx.DefaultPosition, wx.DefaultSize, 0 )
         self.btn_open_output_dir.Enable( False )
         self.btn_open_output_dir.SetMinSize( wx.Size( -1,30 ) )
 
-        bSizer24.Add( self.btn_open_output_dir, 0, wx.ALL, 5 )
+        bSizer22.Add( self.btn_open_output_dir, 0, wx.ALL, 5 )
+
+
+        bSizer81.Add( bSizer22, 2, wx.EXPAND, 5 )
+
+
+        sbSizer3.Add( bSizer81, 0, wx.EXPAND, 5 )
+
+        bSizer24 = wx.BoxSizer( wx.HORIZONTAL )
+
+
+        bSizer24.Add( ( 0, 0), 1, wx.EXPAND, 5 )
 
 
         sbSizer3.Add( bSizer24, 1, wx.EXPAND, 5 )
@@ -341,15 +343,20 @@ class AbsTFTabDDSConverter ( wx.Panel ):
         bSizer2.Add( self.m_panel9, 0, wx.EXPAND |wx.ALL, 5 )
 
         self.m_panel5 = wx.Panel( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
+        bSizer23 = wx.BoxSizer( wx.HORIZONTAL )
+
         sbSizer5 = wx.StaticBoxSizer( wx.StaticBox( self.m_panel5, wx.ID_ANY, _(u"Output Log") ), wx.VERTICAL )
 
         self.text_output_log = wx.TextCtrl( sbSizer5.GetStaticBox(), wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.TE_MULTILINE|wx.TE_READONLY )
         sbSizer5.Add( self.text_output_log, 1, wx.ALL|wx.EXPAND, 5 )
 
 
-        self.m_panel5.SetSizer( sbSizer5 )
+        bSizer23.Add( sbSizer5, 1, wx.EXPAND, 5 )
+
+
+        self.m_panel5.SetSizer( bSizer23 )
         self.m_panel5.Layout()
-        sbSizer5.Fit( self.m_panel5 )
+        bSizer23.Fit( self.m_panel5 )
         bSizer2.Add( self.m_panel5, 1, wx.EXPAND |wx.ALL, 5 )
 
 

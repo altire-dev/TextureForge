@@ -448,6 +448,7 @@ class TFTabDDSConverter(AbsTFTabDDSConverter):
             slot = self.add_slot()
             slot.set_enabled(slot_data["enabled"])
             slot.set_texture_path(slot_data["texture_path"])
+            slot.fp_texture_path.GetTextCtrl().SetInsertionPointEnd()
             slot.set_compression_selection(slot_data["compression"])
 
         self.set_project_file(path)
