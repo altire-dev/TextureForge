@@ -9,7 +9,6 @@
 <br>    <br>
 
 <h2>:gem: Features</h2>
-<br>
 <ul>
     <li>
         <strong>🔁DDS Image Conversion </strong>
