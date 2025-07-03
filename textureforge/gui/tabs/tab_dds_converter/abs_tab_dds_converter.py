@@ -120,8 +120,8 @@ class AbsTFTabDDSConverter ( wx.Panel ):
         sbSizer3.Fit( self.m_panel2 )
         bSizer7.Add( self.m_panel2, 0, wx.EXPAND |wx.ALL, 5 )
 
-        self.m_panel3 = wx.Panel( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
-        sb_input_maps = wx.StaticBoxSizer( wx.StaticBox( self.m_panel3, wx.ID_ANY, _(u"Input Maps") ), wx.VERTICAL )
+        self.panel_input_maps = wx.Panel( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
+        sb_input_maps = wx.StaticBoxSizer( wx.StaticBox( self.panel_input_maps, wx.ID_ANY, _(u"Input Maps") ), wx.VERTICAL )
 
         bSizer3 = wx.BoxSizer( wx.VERTICAL )
 
@@ -316,10 +316,10 @@ class AbsTFTabDDSConverter ( wx.Panel ):
         sb_input_maps.Add( bSizer3, 1, wx.EXPAND, 5 )
 
 
-        self.m_panel3.SetSizer( sb_input_maps )
-        self.m_panel3.Layout()
-        sb_input_maps.Fit( self.m_panel3 )
-        bSizer7.Add( self.m_panel3, 1, wx.EXPAND |wx.ALL, 5 )
+        self.panel_input_maps.SetSizer( sb_input_maps )
+        self.panel_input_maps.Layout()
+        sb_input_maps.Fit( self.panel_input_maps )
+        bSizer7.Add( self.panel_input_maps, 1, wx.EXPAND |wx.ALL, 5 )
 
 
         bSizer2.Add( bSizer7, 3, wx.EXPAND, 5 )
@@ -327,10 +327,20 @@ class AbsTFTabDDSConverter ( wx.Panel ):
         self.m_panel9 = wx.Panel( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
         sbSizer4 = wx.StaticBoxSizer( wx.StaticBox( self.m_panel9, wx.ID_ANY, wx.EmptyString ), wx.VERTICAL )
 
+        bSizer241 = wx.BoxSizer( wx.HORIZONTAL )
+
         self.btn_convert = wx.Button( sbSizer4.GetStaticBox(), wx.ID_ANY, _(u"CONVERT"), wx.DefaultPosition, wx.DefaultSize, 0 )
         self.btn_convert.SetMinSize( wx.Size( -1,30 ) )
 
-        sbSizer4.Add( self.btn_convert, 1, wx.ALL|wx.EXPAND, 5 )
+        bSizer241.Add( self.btn_convert, 1, wx.ALL|wx.EXPAND, 5 )
+
+        self.btn_autoconvert = wx.Button( sbSizer4.GetStaticBox(), wx.ID_ANY, _(u"ENABLE AUTO-CONVERSION"), wx.DefaultPosition, wx.DefaultSize, 0 )
+        self.btn_autoconvert.SetMinSize( wx.Size( -1,30 ) )
+
+        bSizer241.Add( self.btn_autoconvert, 1, wx.ALL, 5 )
+
+
+        sbSizer4.Add( bSizer241, 1, wx.EXPAND, 5 )
 
         self.progressbar = wx.Gauge( sbSizer4.GetStaticBox(), wx.ID_ANY, 100, wx.DefaultPosition, wx.DefaultSize, wx.GA_HORIZONTAL )
         self.progressbar.SetValue( 0 )

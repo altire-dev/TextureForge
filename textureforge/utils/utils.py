@@ -1,7 +1,7 @@
 # ============================================================================================================
 # General Utilities
 # ============================================================================================================
-
+import datetime
 # ============================================================================================================
 # Imports: External
 # ============================================================================================================
@@ -94,11 +94,20 @@ def get_file_extension_from_path(path):
     return extension
 
 
+def get_datetime_string():
+    '''
+    Gets the datetime string for now
+
+    :return: The datetime string for now
+    :rtype: str
+    '''
+    now = datetime.datetime.now()
+    dt_string = datetime.datetime.strftime(now, "%H:%M:%S")
+    return dt_string
 
 
 # ============================================================================================================
 # Test Bed
 # ============================================================================================================
 if __name__ == "__main__":
-    print("TF Root Path: %s" % get_tf_root_path())
-    print("TexConv Path: %s" % get_texconv_path())
+    print(get_datetime_string())

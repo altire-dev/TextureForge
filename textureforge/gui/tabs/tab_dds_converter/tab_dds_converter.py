@@ -5,6 +5,8 @@ import wx
 import os
 import time
 import json
+from threading import Thread
+from threading import Event
 
 # ===================================================================================================
 # Imports: Internal
@@ -35,15 +37,22 @@ class TFTabDDSConverter(AbsTFTabDDSConverter):
     # ===================================================================================================
     # Methods
     # ===================================================================================================
-    def __init__(self, parent):
+    def __init__(self, tfgui, parent):
         '''
         Constructor
+
+        :param: tfgui: The TextureForge GUI instance
+        :type tfgui: TextureFrogeGUI
+        :param parent: The Tab's parent Notebook
+        :type parent: wx.Notebook
         '''
+        self._tfgui = tfgui
         self._columns = {}
         self._slots = []
         self._project_file = None
         self._count_maps_converted = 0
         self._dds_converter = None
+        self._auto_converter = None
 
         # Initialise Frame
         super(TFTabDDSConverter, self).__init__(parent)
@@ -71,6 +80,7 @@ class TFTabDDSConverter(AbsTFTabDDSConverter):
         self.Bind(wx.EVT_BUTTON, self._on_load, self.btn_load)
         self.Bind(wx.EVT_BUTTON, self._on_scan_folder, self.btn_scan_folder)
         self.Bind(wx.EVT_BUTTON, self._on_open_output_dir, self.btn_open_output_dir)
+        self.Bind(wx.EVT_BUTTON, self._on_auto_convert, self.btn_autoconvert)
 
         # File/Dir Change Events
         self.Bind(wx.EVT_DIRPICKER_CHANGED, self._on_output_dir_changed, self.dp_outputdir)
@@ -100,6 +110,92 @@ class TFTabDDSConverter(AbsTFTabDDSConverter):
     # ===================================================================================================
     # Event Handles
     # ===================================================================================================
+    def on_close(self):
+        '''
+        Handler: Application closed
+        '''
+        if self._auto_converter:
+            self._auto_converter.stop()
+        if self._dds_converter:
+            self._dds_converter.stop()
+
+    def _on_auto_convert(self, event):
+        '''
+        Handler: Auto-convert button pressed
+
+        :param event: wx Btn Event
+        :type event: wx.Event
+        '''
+        # ===================================================================================================
+        # Enable Auto Conversion
+        # ===================================================================================================
+        if not self._auto_converter:
+            # Validate Input
+            output_dir = self.dp_outputdir.GetPath()
+            if not os.path.isdir(output_dir):
+                self.write_to_log("Output Directory must first be set to a valid folder path", True)
+                return
+            if not self.get_valid_slots():
+                self.write_to_log("At least one slot must be configured and enabled to perform conversion")
+                return
+
+            # Update UI
+            for slot in self.get_slots():
+                if slot.is_enabled() and slot.is_path_valid():
+                    slot.set_status(slot.STATUS_WATCHING)
+                else:
+                    slot.set_status(slot.STATUS_DISABLED)
+            self.btn_load.Disable()
+            self.btn_save.Disable()
+            self.btn_save_as.Disable()
+            self.text_project_name.Disable()
+            self.btn_convert.Disable()
+            self.btn_autoconvert.SetBackgroundColour(wx.Colour(46, 197, 53))
+            self.btn_autoconvert.SetLabel("AUTO CONVERSION RUNNING")
+            self.panel_input_maps.Disable()
+            self.dp_outputdir.Disable()
+            self.btn_scan_folder.Disable()
+
+            '''
+            Every second, run through eah slot
+                Check if file hash has changed and thus file has been updated
+                if so, perform conversion and write to log
+                Get the file hash of each file and store it
+            '''
+            self._auto_converter = DDSAutoConverter(self, output_dir)
+            self._auto_converter.start()
+
+        # ===================================================================================================
+        # Disable Auto Conversion
+        # ===================================================================================================
+        else:
+            self.btn_autoconvert.Disable()
+            self._auto_converter.stop()
+
+
+    def on_auto_convert_stopped(self):
+        '''
+        Handler: Auto-conversion stopped
+        '''
+        # Update UI
+        self.btn_load.Enable()
+        self.btn_save.Enable()
+        self.btn_save_as.Enable()
+        self.text_project_name.Enable()
+        self.btn_convert.Enable()
+        self.btn_autoconvert.Enable()
+        self.btn_autoconvert.SetForegroundColour(wx.Colour(0, 0, 0, 255))
+        self.btn_autoconvert.SetBackgroundColour(wx.Colour(253, 253, 253, 255))
+        self.btn_autoconvert.SetLabel("ENABLE AUTO CONVERSION")
+        self.panel_input_maps.Enable()
+        self.dp_outputdir.Enable()
+        self.btn_scan_folder.Enable()
+        for slot in self.get_slots():
+            slot.set_status(slot.STATUS_WAITING)
+
+        self._auto_converter = None
+        self.write_to_log("Auto-conversion stopped")
+
     def _on_scan_folder(self, event):
         '''
         Handler: Scan Folder button pressed
@@ -158,7 +254,7 @@ class TFTabDDSConverter(AbsTFTabDDSConverter):
         :type event: wx.Event
         '''
         if self._dds_converter:
-            self._dds_converter.stop_conversion()
+            self._dds_converter.stop()
 
     def on_conversion_cancelled(self):
         '''
@@ -181,7 +277,11 @@ class TFTabDDSConverter(AbsTFTabDDSConverter):
         # Validate output directory
         output_dir = self.dp_outputdir.GetPath()
         if not os.path.isdir(output_dir):
-            self.write_to_log("Output Directory must be set to a valid folder path", True)
+            self.write_to_log("Output Directory must first be set to a valid folder path", True)
+            return
+        # Validate Slots
+        if not self.get_valid_slots():
+            self.write_to_log("At least one slot must be configured and enabled to perform conversion")
             return
 
         # ===================================================================================================
@@ -207,10 +307,6 @@ class TFTabDDSConverter(AbsTFTabDDSConverter):
 
             texture_path    = slot.get_texture_path()
             compression     = slot.get_compression_type()
-            if not os.path.isfile(texture_path):
-                self.write_to_log("Texture path file is invalid, or does not exist: %s" % texture_path, True)
-                return
-
             target_maps.append((texture_path, compression, slot))
 
         self.progressbar.SetRange(len(target_maps))
@@ -430,7 +526,7 @@ class TFTabDDSConverter(AbsTFTabDDSConverter):
             with open(path, "r") as project_file:
                 project_data = json.load(project_file)
         except Exception as ex:
-            self.write_to_log("Unable to load project at %s --> %s" % (project_data, ex))
+            self.write_to_log("Unable to load project at %s --> %s" % (path, ex))
             return
 
         # ===================================================================================================
@@ -494,6 +590,22 @@ class TFTabDDSConverter(AbsTFTabDDSConverter):
         '''
         return self._slots
 
+    def get_valid_slots(self, enabled_only=True):
+        '''
+        Returns the currently valid slots (Texture Path set)
+
+        :param enabled_only: whether only enabled slots should be considered. Defaults to True
+        :type enabled_only: bool
+        '''
+        valid_slots = []
+        for slot in self.get_slots():
+            try:
+                if slot.is_enabled() and os.path.isfile(slot.get_texture_path()):
+                    valid_slots.append(slot)
+            except RuntimeError:
+                continue
+        return valid_slots
+
     def write_to_log(self, msg, error=False):
         '''
         Writes a message to the Output Log
@@ -501,10 +613,10 @@ class TFTabDDSConverter(AbsTFTabDDSConverter):
         :param msg: The message to write
         :type msg: str
         '''
-        prefix = "[-]"
+        log_msg = "[%s] " % utils.get_datetime_string()
         if error:
-            prefix = "[!!] ERROR: "
-        log_msg = "%s %s\n" % (prefix, msg)
+            log_msg += "ERROR: "
+        log_msg += "%s\n" % msg
         self.text_output_log.write(log_msg)
 
     def set_project_file(self, path):
@@ -515,6 +627,8 @@ class TFTabDDSConverter(AbsTFTabDDSConverter):
         :type path: str
         '''
         self._project_file = path
+        project_filename = utils.get_path_filename(path)
+        self._tfgui.set_title_context("%s (%s)" % (self.text_project_name.GetValue(), project_filename))
         self.btn_save.Enable()
 
     def _get_icon_path(self):
@@ -538,6 +652,86 @@ class TFTabDDSConverter(AbsTFTabDDSConverter):
 
 
 
+# ===================================================================================================
+# Auto-Converter Class
+# ===================================================================================================
+class DDSAutoConverter(Thread):
+    '''
+    DDS Auto-Converter Thread
+    '''
 
+    # ===================================================================================================
+    # Properties
+    # ===================================================================================================
+
+    # ===================================================================================================
+    # Methods
+    # ===================================================================================================
+    def __init__(self, tab, output_dir):
+        '''
+        Constructor
+
+        :param tab: The DDS converter Tab instance
+        :type tab: TFTabDDSConverter
+        :param output_dir: Path to the output directory
+        :type output_dir: str
+        '''
+        self._tab = tab
+        self._output_dir = output_dir
+        self._stop_event = Event()
+        super(DDSAutoConverter, self).__init__()
+
+
+    def stop(self):
+        '''
+        Stops the auto-conversion process
+        '''
+        self._stop_event.set()
+
+    def run(self):
+        '''
+        DDS Auto Converter - Thread runner
+        '''
+        valid_slots = {}
+
+        # Get Initial modtimes
+        for slot in self._tab.get_valid_slots():
+            valid_slots[slot] = os.path.getmtime(slot.get_texture_path())
+
+        # ===================================================================================================
+        # Main Watcher Loop
+        # ===================================================================================================
+        self._tab.write_to_log("Auto-conversion running. Watching for file changes...")
+        while not self._stop_event.isSet():
+            maps_to_convert = []
+            time.sleep(1)
+
+            # Check for changes
+            slots = self._tab.get_valid_slots()
+            for slot in slots:
+                tpath = slot.get_texture_path()
+                mod_time = os.path.getmtime(tpath)
+                if mod_time > valid_slots[slot]:
+                    self._tab.write_to_log("File change detected --> %s" % tpath)
+                    maps_to_convert.append((tpath, slot.get_compression_type(), slot))
+                    valid_slots[slot] = mod_time
+
+            # Convert Updated Maps
+            if maps_to_convert:
+                dds_processor = DDSProcessor()
+                for map in maps_to_convert:
+                    path, compression, slot = map[0], map[1], map[2]
+
+                    # Check Stop Event
+                    if self._stop_event.isSet():
+                        break
+
+                    # !!! Convert !!!
+                    filename = utils.get_path_filename(path)
+                    self._tab.write_to_log("Converting Map: %s" % filename)
+                    dds_processor.convert_to_dds(path, self._output_dir, compression)
+                    self._tab.write_to_log("Map converted")
+
+        self._tab.on_auto_convert_stopped()
 
 

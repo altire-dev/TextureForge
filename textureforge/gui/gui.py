@@ -50,12 +50,23 @@ class TextureForgeGUI(TextureForgeMF):
         '''
         self._version = version
         self._author = author
+        self._tabs = []
 
         # Initialise Frame
         super(TextureForgeGUI, self).__init__(None)
 
         # Set up GUI
         self._init_ui()
+        self._bind_events()
+
+
+    def _bind_events(self):
+        '''
+        Binds UI Events
+        '''
+
+        self.Bind(wx.EVT_CLOSE, self._on_close)
+
 
     def _init_ui(self):
         '''
@@ -65,7 +76,7 @@ class TextureForgeGUI(TextureForgeMF):
         # ============================================================================================================
         # Update Main Frame
         # ============================================================================================================
-        self.SetTitle("TextureForge v%s" % self._version)
+        self.SetTitle(self.get_base_title())
         if not self.GetParent():
             icon = wx.Icon()
             icon.CopyFromBitmap(wx.Bitmap(self._get_icon_path()))
@@ -75,8 +86,54 @@ class TextureForgeGUI(TextureForgeMF):
         # Initialise Tabs
         # ============================================================================================================
         # Tab: DDS Converter
-        tab_dds_converter = TFTabDDSConverter(self.Notebook)
+        tab_dds_converter = TFTabDDSConverter(self, self.Notebook)
+        self._tabs.append(tab_dds_converter)
         self.Notebook.AddPage(tab_dds_converter, "DDS Converter")
+
+
+    # ===================================================================================================
+    # Getters
+    # ===================================================================================================
+    def get_base_title(self):
+        '''
+        Gets the application's base title
+
+        :returns: The application's base title
+        :rtype: str
+        '''
+        return "TextureForge v%s" % self._version
+
+
+    # ===================================================================================================
+    # Setters
+    # ===================================================================================================
+    def set_title_context(self, context):
+        '''
+        Sets the application's title context
+
+        :param context: The context string to use
+        :type context: str
+        '''
+        self.SetTitle(self.get_base_title() + " - " + context)
+
+
+    # ===================================================================================================
+    # Event Handlers
+    # ===================================================================================================
+    def _on_close(self, event):
+        '''
+        Handler: application closed
+
+        :param event: The wx Close event
+        :type event: wx.Event
+        '''
+
+        # Makes tabs aware of closure
+        for tab in self._tabs:
+            tab.on_close()
+
+        self.Destroy()
+
 
     # ============================================================================================================
     # Internal Methods

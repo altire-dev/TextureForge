@@ -2,6 +2,7 @@
 # Imports: External
 # ===================================================================================================
 import wx
+import os
 from wx import CheckBox
 from wx import FilePickerCtrl
 
@@ -24,7 +25,8 @@ class InputMapSlot:
     STATUS_COMPLETE     = 2
     STATUS_FAILED       = 3
     STATUS_DISABLED     = 4
-    STATUS_CANCELLED    =   5
+    STATUS_CANCELLED    = 5
+    STATUS_WATCHING     = 6
 
     # Status Labels
     STATUS_LABELS = {
@@ -33,7 +35,8 @@ class InputMapSlot:
         STATUS_COMPLETE:    "Complete",
         STATUS_FAILED:      "Failed",
         STATUS_DISABLED:    "Disabled",
-        STATUS_CANCELLED:   "Cancelled"
+        STATUS_CANCELLED:   "Cancelled",
+        STATUS_WATCHING:    "Watching"
     }
 
     # Colours
@@ -164,6 +167,17 @@ class InputMapSlot:
         '''
         return self.cb_enabled.GetValue()
 
+    def is_path_valid(self):
+        '''
+        Checks if the Texture Path is set to a valid, existing file
+
+        :returns: True if set to valid existing file, otherwise False
+        :rtype: bool
+        '''
+        if os.path.isfile(self.get_texture_path()):
+            return True
+        return False
+
     def get_texture_path(self):
         '''
         Gets the slots Texture Path
@@ -242,6 +256,9 @@ class InputMapSlot:
         elif status == self.STATUS_CANCELLED:
             self._label_status.SetLabel("Cancelled")
             self._label_status.SetForegroundColour(self.COLOR_CANCELLED)
+        elif status == self.STATUS_WATCHING:
+            self._label_status.SetLabel("Watching")
+            self._label_status.SetForegroundColour(self.COLOR_DISABLED)
 
     def set_texture_path(self, path):
         '''

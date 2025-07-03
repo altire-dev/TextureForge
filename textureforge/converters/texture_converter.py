@@ -38,7 +38,7 @@ class TextureConverter(Thread):
         '''
         self.start()
 
-    def stop_conversion(self):
+    def stop(self):
         '''
         Starts the conversion process
         '''
