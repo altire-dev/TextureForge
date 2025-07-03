@@ -8,3 +8,6 @@
 # Build Files
 build/
 dist/
+
+# Temp Files
+*.afdesign~lock~
