@@ -260,15 +260,18 @@ class InputMapSlot:
             self._label_status.SetLabel("Watching")
             self._label_status.SetForegroundColour(self.COLOR_DISABLED)
 
-    def set_texture_path(self, path):
+    def set_texture_path(self, path, move_to_end=True):
         '''
         Sets the slot's Texture Path
 
         :param path: The path to use
         :type path: str
+        :param move_to_end: Whether the cursor should be moved to the end of the input control
+        :type move_to_end: bool
         '''
         self.fp_texture_path.SetPath(path)
-        self.fp_texture_path.GetTextCtrl().SetInsertionPointEnd()
+        if move_to_end:
+            self.fp_texture_path.GetTextCtrl().SetInsertionPointEnd()
 
     def set_compression_selection(self, _type):
         '''
@@ -305,6 +308,7 @@ class InputMapSlot:
         cell_sizer.Add(widget, 1, wx.ALIGN_CENTER_VERTICAL | wx.ALL, 5)
         column.Add(cell_sizer, proportion, wx.ALL | wx.EXPAND, 5)
         column.FitInside(self._table)
+        cell_sizer.FitInside(self._table)
         self._cells.append(cell_sizer)
 
     def _build_cell_sizer(self):

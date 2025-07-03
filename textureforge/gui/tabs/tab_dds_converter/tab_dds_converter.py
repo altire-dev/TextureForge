@@ -543,9 +543,13 @@ class TFTabDDSConverter(AbsTFTabDDSConverter):
         for slot_data in project_data["slots"]:
             slot = self.add_slot()
             slot.set_enabled(slot_data["enabled"])
-            slot.set_texture_path(slot_data["texture_path"])
-            slot.fp_texture_path.GetTextCtrl().SetInsertionPointEnd()
+            slot.set_texture_path(slot_data["texture_path"], False)
             slot.set_compression_selection(slot_data["compression"])
+
+        # Update Slot Texture Path controls (cursor to end)
+        for slot in self.get_slots():
+            slot.fp_texture_path.Layout()
+            slot.fp_texture_path.GetTextCtrl().SetInsertionPointEnd()
 
         self.set_project_file(path)
         self.write_to_log("Project Loaded: %s" % path)
