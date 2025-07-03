@@ -1,6 +1,6 @@
 <div align="center">
 <img src="images/icon/exports/icon.png" width="256px" height="256px"/>
-<h1>🔥TextureForge🔥</h1>
+<h1>🔥 TextureForge 🔥</h1>
 </div>
     TextureForge is an open-source suite of texture tools that aims to streamline the texture workflow for 
     Game Developers and 3D Asset Creators. The goal of this project is to provide a collection of useful utilities 
@@ -11,7 +11,7 @@
 <h2>:gem: Features</h2>
 <ul>
     <li>
-        <strong>🔁DDS Image Conversion </strong>
+        <strong>🔁 DDS Image Conversion </strong>
         <br>Easily convert PNG, JPG, BMP and other common image formats into DDS files with a variety of compression options.
     </li>
     <br>
