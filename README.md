@@ -25,9 +25,13 @@
         <br>Convert your files manually with a single click, or turn on automatic conversion to have TextureForge detect changes to your texture files and
         convert them automatically.
     </li>
-</ul>
     <br>
-
+    <li>
+        <strong>🔍 Folder Scanning </strong>
+        <br>Point TextureForge at a folder and have it find images for you, eliminating the need to enter them manually.
+    </li>
+</ul>
+<br>
 <h2> ⚡ Application </h2>
 <br>
 <div align="center">
