@@ -14,18 +14,18 @@
 <ul>
     <li>
         <strong>🔁DDS Image Conversion </strong>
-        <br>Easily convert PNG, JPG, BMP and other common image formats into DDS files with a variety of compression options
+        <br>Easily convert PNG, JPG, BMP and other common image formats into DDS files with a variety of compression options.
     </li>
     <br>
     <li>
-        <strong>📒 Project-based workflow</strong>
-        <br>Easily switch between assets by saving and loading your configuration to TextureForge project files
+        <strong>📒 Project-Based Workflow</strong>
+        <br>Easily switch between assets by saving and loading your configuration to TextureForge project files.
     </li>
     <br>
     <li>
         <strong>🔧 Automatic and Manual Conversion Options</strong>
         <br>Convert your files manually with a single click, or turn on automatic conversion to have TextureForge detect changes to your texture files and
-        convert them automatically
+        convert them automatically.
     </li>
 </ul>
     <br>
