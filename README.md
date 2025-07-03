@@ -36,6 +36,10 @@
     <img src="images/app.png" height="512"/>
 </div>
 <br>
+
+<h2> ⬇️ Download</h2>
+You can download TextureForge from the <a href="https://github.com/altire-dev/TextureForge/releases">Releases</a> page.
+<br>
     
 <h2>📌 Acknowledgedments and External Resources</h2>
 <ul>
