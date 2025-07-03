@@ -2,6 +2,7 @@
 # Imports: External
 # ===================================================================================================
 import os
+import subprocess
 from subprocess import Popen
 from subprocess import PIPE
 
@@ -113,7 +114,8 @@ class DDSProcessor(TFImageProcessor):
         # ============================================================================================================
         process = Popen(
             cmd,
-            stdout=PIPE
+            stdout=PIPE,
+            creationflags=subprocess.CREATE_NO_WINDOW
         )
         stdout, stderr = process.communicate()
         result["output"] = stdout.decode("utf-8")
@@ -160,7 +162,8 @@ class DDSProcessor(TFImageProcessor):
         # ============================================================================================================
         process = Popen(
             cmd,
-            stdout=PIPE
+            stdout=PIPE,
+            creationflags=subprocess.CREATE_NO_WINDOW
         )
         stdout, stderr = process.communicate()
         output = stdout.decode("utf-8")
