@@ -65,18 +65,24 @@ def get_tf_root_path():
     utils_path = os.path.dirname(__file__)
     return os.path.dirname(utils_path)
 
-def get_path_filename(path):
+def get_path_filename(path, exclude_extension=False):
     '''
     Extracts the filename from a path
 
     :param path: The path to extract the filename from
     :type path: str
-    :returns: The extract filename, or None if the last path element is NOT a file
+    :param exclude_extension: Whether the file extension should be stripped. Defaults to False
+    :type exclude_extension: bool, Optional
+    :returns: The extracted filename, or None if the last path element is NOT a file
     :rtype: str, None
     '''
-    if not os.path.isfile(path):
-        return None
-    return os.path.split(path)[1]
+    filename = None
+    if len(os.path.split(path)) > 1:
+        filename = os.path.split(path)[1]
+        if exclude_extension:
+            filename = filename.split(".")[0]
+
+    return filename
 
 def get_file_extension_from_path(path):
     '''

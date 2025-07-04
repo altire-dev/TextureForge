@@ -7,6 +7,13 @@ from wx import CheckBox
 from wx import FilePickerCtrl
 
 # ===================================================================================================
+# Imports: Internal
+# ===================================================================================================
+from textureforge.processors import DDSProcessor
+from textureforge.utils import utils
+from textureforge.components import game_presets
+
+# ===================================================================================================
 # Input Map Slot Class
 # ===================================================================================================
 class InputMapSlot:
@@ -60,12 +67,15 @@ class InputMapSlot:
         :type table: wx.Panel
         :param cols: The table columns
         :type cols: dict[str, wx.Sizer]
+        :param game_preset: The currently active game preset
+        :type game_preset: str
         '''
         self._tf = tf
         self._table = table
         self._cols = cols
         self._cells = []
         self._compression_formats = []
+        self._game_preset = None
 
         # ===================================================================================================
         # Build Components
@@ -113,9 +123,14 @@ class InputMapSlot:
         '''
         Binds GUI Events
         '''
+        # Button Events
         self._table.Bind(wx.EVT_BUTTON, self._on_delete, self.btn_delete)
+
+        # State Events
         self._table.Bind(wx.EVT_FILEPICKER_CHANGED, self._on_texture_path_changed, self.fp_texture_path)
         self._table.Bind(wx.EVT_CHECKBOX, self._on_enabled_change, self.cb_enabled)
+
+
 
     # ============================================================================================================
     # Event Handlers/Callbacks
@@ -123,6 +138,9 @@ class InputMapSlot:
     def _on_enabled_change(self, event):
         '''
         Handler: Enabled Checkbox state changed
+
+        :param event: The wx Button event
+        :type event. wx.Event
         '''
 
         if self.cb_enabled.GetValue():
@@ -160,9 +178,11 @@ class InputMapSlot:
         :param event: The wx Button event
         :type event. wx.Event
         '''
-
-        # Move cursor to end
-        self.fp_texture_path.GetTextCtrl().SetInsertionPointEnd()
+        # ===================================================================================================
+        # Process Game Preset
+        # ===================================================================================================
+        if self._game_preset == game_presets.GP_TES_V_SKYRIM:
+            self._apply_game_preset()
 
     # ============================================================================================================
     # Getters
@@ -212,7 +232,7 @@ class InputMapSlot:
         '''
         self.set_status(self.STATUS_WAITING)
         self.fp_texture_path.Enable()
-        self.choice_compression.Enabl()
+        self.choice_compression.Enable()
 
     def disable_slot(self):
         '''
@@ -225,6 +245,24 @@ class InputMapSlot:
     # ============================================================================================================
     # Setters
     # ============================================================================================================
+    def set_game_preset(self, game_preset):
+        '''
+        Sets the currently active game preset
+
+        :param game_preset: The currently active game preset
+        :type game_preset: str
+        '''
+        self._game_preset = game_preset
+
+        # ===================================================================================================
+        # Process Preset
+        # ===================================================================================================
+        if self._game_preset == game_presets.GP_NONE:
+            self.choice_compression.Enable()
+        else:
+            self.choice_compression.Disable()
+            self._apply_game_preset()
+
     def set_compression_options(self, formats):
         '''
         Sets the available compression format options
@@ -304,6 +342,40 @@ class InputMapSlot:
     # ============================================================================================================
     # Internal Methods
     # ============================================================================================================
+    def _apply_game_preset(self):
+        '''
+        Applies the current game preset
+        '''
+
+        tf_path = self.fp_texture_path.GetPath()
+        tf_name = utils.get_path_filename(tf_path, True)
+
+        # Texture Type: Normal
+        if self._game_preset == game_presets.GP_TES_V_SKYRIM:
+            if tf_name.endswith("_n") or tf_name.endswith("_normal"):
+                self.set_compression_selection(DDSProcessor.COMPRESSION_BC7)
+            # Texture Type: Glow Map
+            elif tf_name.endswith("_g") or tf_name.endswith("_sk") or tf_name.endswith("_glow"):
+                self.set_compression_selection(DDSProcessor.COMPRESSION_BC1)
+            # Texture Type: Bump Map
+            elif tf_name.endswith("_p") or tf_name.endswith("_bump"):
+                self.set_compression_selection(DDSProcessor.COMPRESSION_BC4)
+            # Texture Type: Cube Map
+            elif tf_name.endswith("_e") or tf_name.endswith("_cube"):
+                self.set_compression_selection(DDSProcessor.COMPRESSION_BC1)
+            # Texture Type: Environment Mask
+            elif tf_name.endswith("_m") or tf_name.endswith("_em"):
+                self.set_compression_selection(DDSProcessor.COMPRESSION_BC4)
+            # Texture Type: Inner Diffuse
+            elif tf_name.endswith("_i"):
+                self.set_compression_selection(DDSProcessor.COMPRESSION_BC7)
+            # Texture Type: Inner Diffuse
+            elif tf_name.endswith("_s") or tf_name.endswith("_b"):
+                self.set_compression_selection(DDSProcessor.COMPRESSION_BC1)
+            # Texture Type: Diffuse, or Unknown
+            else:
+                self.set_compression_selection(DDSProcessor.COMPRESSION_BC1)
+
     def _create_cell(self, widget, column, proportion):
         '''
         Create a slot cell and adds the provided widget to it

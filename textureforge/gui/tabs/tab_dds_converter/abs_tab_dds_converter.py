@@ -52,6 +52,16 @@ class AbsTFTabDDSConverter ( wx.Panel ):
 
         bSizer5.Add( ( 0, 0), 1, wx.EXPAND, 5 )
 
+        self.m_staticText102 = wx.StaticText( self.m_panel4, wx.ID_ANY, _(u"Game Preset:"), wx.DefaultPosition, wx.DefaultSize, 0 )
+        self.m_staticText102.Wrap( -1 )
+
+        bSizer5.Add( self.m_staticText102, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
+
+        choice_game_presetChoices = [ _(u"NONE"), _(u"TES V: Skyrim") ]
+        self.choice_game_preset = wx.Choice( self.m_panel4, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, choice_game_presetChoices, 0 )
+        self.choice_game_preset.SetSelection( 0 )
+        bSizer5.Add( self.choice_game_preset, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
+
         self.btn_scan_folder = wx.Button( self.m_panel4, wx.ID_ANY, _(u"Scan Folder"), wx.DefaultPosition, wx.DefaultSize, 0 )
         self.btn_scan_folder.SetBackgroundColour( wx.SystemSettings.GetColour( wx.SYS_COLOUR_WINDOW ) )
         self.btn_scan_folder.SetMinSize( wx.Size( -1,30 ) )

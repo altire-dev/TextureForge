@@ -17,6 +17,7 @@ from textureforge.converters import ConversionOperation
 from textureforge.processors import DDSProcessor
 from textureforge.components.image_discovery import ImageDiscoverer
 from textureforge.utils import utils
+from textureforge.components import game_presets
 
 from .abs_tab_dds_converter import AbsTFTabDDSConverter
 
@@ -32,7 +33,6 @@ class TFTabDDSConverter(AbsTFTabDDSConverter):
     # ===================================================================================================
     # Properties
     # ===================================================================================================
-
 
     # ===================================================================================================
     # Methods
@@ -53,6 +53,7 @@ class TFTabDDSConverter(AbsTFTabDDSConverter):
         self._count_maps_converted = 0
         self._dds_converter = None
         self._auto_converter = None
+        self._game_preset = None
 
         # Initialise Frame
         super(TFTabDDSConverter, self).__init__(parent)
@@ -81,6 +82,7 @@ class TFTabDDSConverter(AbsTFTabDDSConverter):
         self.Bind(wx.EVT_BUTTON, self._on_scan_folder, self.btn_scan_folder)
         self.Bind(wx.EVT_BUTTON, self._on_open_output_dir, self.btn_open_output_dir)
         self.Bind(wx.EVT_BUTTON, self._on_auto_convert, self.btn_autoconvert)
+        self.Bind(wx.EVT_CHOICE, self._on_preset_change, self.choice_game_preset)
 
         # File/Dir Change Events
         self.Bind(wx.EVT_DIRPICKER_CHANGED, self._on_output_dir_changed, self.dp_outputdir)
@@ -89,6 +91,7 @@ class TFTabDDSConverter(AbsTFTabDDSConverter):
         '''
         Initialses the UI, updating and overriding any properties
         '''
+        self._game_preset = game_presets.GP_NONE
 
         # ============================================================================================================
         # Store Columns
@@ -110,6 +113,19 @@ class TFTabDDSConverter(AbsTFTabDDSConverter):
     # ===================================================================================================
     # Event Handles
     # ===================================================================================================
+    def _on_preset_change(self, event=None):
+        '''
+        Handler: Game Preset changed
+
+        :param event: The wx Button event
+        :type event. wx.Event
+        '''
+        self._game_preset = self.choice_game_preset.GetStringSelection()
+
+        # Update Preset for slots
+        for slot in self.get_slots():
+            slot.set_game_preset(self._game_preset)
+
     def on_close(self):
         '''
         Handler: Application closed
@@ -221,7 +237,7 @@ class TFTabDDSConverter(AbsTFTabDDSConverter):
         self.scan_dir(dir_path)
 
 
-    def _on_output_dir_changed(self, event):
+    def _on_output_dir_changed(self, event=None):
         '''
         Handler: Output Directory changed
 
@@ -487,9 +503,10 @@ class TFTabDDSConverter(AbsTFTabDDSConverter):
         # Build Save Data
         # ===================================================================================================
         save_data = {
-            "save_version": "1",
+            "save_version": "2",
             "project_name": self.text_project_name.GetValue(),
             "output_dir": self.dp_outputdir.GetPath(),
+            "game_preset": self.choice_game_preset.GetStringSelection(),
             "slots": []
         }
 
@@ -534,7 +551,9 @@ class TFTabDDSConverter(AbsTFTabDDSConverter):
         # ===================================================================================================
         self.text_project_name.SetValue(project_data["project_name"])
         self.dp_outputdir.SetPath(project_data["output_dir"])
-        self.dp_outputdir.GetTextCtrl().SetInsertionPointEnd()
+        self._on_output_dir_changed()
+        if int(project_data["save_version"]) > 1:
+            self.choice_game_preset.SetStringSelection(project_data["game_preset"])
 
         # ===================================================================================================
         # Load Slots
@@ -551,6 +570,7 @@ class TFTabDDSConverter(AbsTFTabDDSConverter):
             slot.fp_texture_path.Layout()
             slot.fp_texture_path.GetTextCtrl().SetInsertionPointEnd()
 
+        self._on_preset_change()
         self.set_project_file(path)
         self.write_to_log("Project Loaded: %s" % path)
 
@@ -581,6 +601,7 @@ class TFTabDDSConverter(AbsTFTabDDSConverter):
         '''
         slot = InputMapSlot(self, self.slots_table, self._columns)
         slot.set_compression_options(DDSProcessor.COMPRESSION_FORMATS)
+        slot.set_game_preset(self._game_preset)
         self.write_to_log("Slot Added")
         self._slots.append(slot)
         return slot
