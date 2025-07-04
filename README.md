@@ -30,6 +30,11 @@
         <strong>🔍 Folder Scanning </strong>
         <br>Point TextureForge at a folder and have it find images for you, eliminating the need to enter them manually.
     </li>
+    <br>
+    <li>
+        <strong>🎮 Selectable Game Presets</strong>
+        <br>Choose a target game and have TextureForge automatically determine the best compression settings for each map
+    </li>
 </ul>
 <br>
 <h2> ⚡ Application </h2>
