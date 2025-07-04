@@ -75,7 +75,16 @@ class InputMapSlot:
         self._cols["enabled"].Add(self.cb_enabled, 0, wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_CENTER_VERTICAL | wx.ALL, 5)
 
         # Texture Path (FilePicker)
-        self.fp_texture_path = FilePickerCtrl(self._table, wx.ID_ANY, wx.EmptyString, "Select Image File", wildcard="PNG File|*.png")
+        self.fp_texture_path = FilePickerCtrl(
+            self._table, wx.ID_ANY, wx.EmptyString, "Select Image File",
+            wildcard = (
+                "All Image Files (*.png;*.jpg;*.jpeg;*.bmp;*.tif;*.tiff)|*.png;*.jpg;*.jpeg;*.bmp;*.tif;*.tiff|"
+                "PNG Files (*.png)|*.png|"
+                "JPEG Files (*.jpg;*.jpeg)|*.jpg;*.jpeg|"
+                "Bitmap Files (*.bmp)|*.bmp|"
+                "TIFF Files (*.tif;*.tiff)|*.tif;*.tiff"
+            )
+        )
         self._create_cell(self.fp_texture_path, self._cols["texture_path"], 0)
 
         # Compression (ChoiceBox)
