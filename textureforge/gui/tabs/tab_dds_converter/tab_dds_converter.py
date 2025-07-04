@@ -170,6 +170,7 @@ class TFTabDDSConverter(AbsTFTabDDSConverter):
             self.btn_autoconvert.SetLabel("AUTO CONVERSION RUNNING")
             self.panel_input_maps.Disable()
             self.dp_outputdir.Disable()
+            self.choice_game_preset.Disable()
             self.btn_scan_folder.Disable()
 
             '''
@@ -206,6 +207,7 @@ class TFTabDDSConverter(AbsTFTabDDSConverter):
         self.panel_input_maps.Enable()
         self.dp_outputdir.Enable()
         self.btn_scan_folder.Enable()
+        self.choice_game_preset.Enable()
         for slot in self.get_slots():
             slot.set_status(slot.STATUS_WAITING)
 
