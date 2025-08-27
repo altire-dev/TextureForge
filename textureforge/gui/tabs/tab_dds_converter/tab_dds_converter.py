@@ -299,7 +299,7 @@ class TFTabDDSConverter(AbsTFTabDDSConverter):
             return
         # Validate Slots
         if not self.get_valid_slots():
-            self.write_to_log("At least one slot must be configured and enabled to perform conversion")
+            self.write_to_log("At least one slot must be configured, enabled and point to a valid file to perform conversion")
             return
 
         # ===================================================================================================
@@ -720,6 +720,7 @@ class DDSAutoConverter(Thread):
         DDS Auto Converter - Thread runner
         '''
         valid_slots = {}
+        first_run = True
 
         # Get Initial modtimes
         for slot in self._tab.get_valid_slots():
@@ -728,7 +729,6 @@ class DDSAutoConverter(Thread):
         # ===================================================================================================
         # Main Watcher Loop
         # ===================================================================================================
-        self._tab.write_to_log("Auto-conversion running. Watching for file changes...")
         while not self._stop_event.isSet():
             maps_to_convert = []
             time.sleep(1)
@@ -738,8 +738,9 @@ class DDSAutoConverter(Thread):
             for slot in slots:
                 tpath = slot.get_texture_path()
                 mod_time = os.path.getmtime(tpath)
-                if mod_time > valid_slots[slot]:
-                    self._tab.write_to_log("File change detected --> %s" % tpath)
+                if mod_time > valid_slots[slot] or first_run:
+                    if not first_run:
+                        self._tab.write_to_log("File change detected --> %s" % tpath)
                     maps_to_convert.append((tpath, slot.get_compression_type(), slot))
                     valid_slots[slot] = mod_time
 
@@ -758,6 +759,11 @@ class DDSAutoConverter(Thread):
                     self._tab.write_to_log("Converting Map: %s" % filename)
                     dds_processor.convert_to_dds(path, self._output_dir, compression)
                     self._tab.write_to_log("Map converted")
+                self._tab.write_to_log("Initial conversion complete")
+
+            if first_run:
+                self._tab.write_to_log("Auto-conversion now running. Watching for file changes...")
+                first_run = False
 
         self._tab.on_auto_convert_stopped()
 
