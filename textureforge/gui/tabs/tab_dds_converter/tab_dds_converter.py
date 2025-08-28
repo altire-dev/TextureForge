@@ -5,6 +5,7 @@ import wx
 import os
 import time
 import json
+import sys
 from threading import Thread
 from threading import Event
 
@@ -61,6 +62,12 @@ class TFTabDDSConverter(AbsTFTabDDSConverter):
         # Set up GUI
         self._bind_events()
         self._init_ui()
+
+        # Load project if invokved with one
+        if len(sys.argv) > 1:
+            project_path = sys.argv[1]
+            if os.path.isfile(project_path):
+                self.load_project(project_path)
 
     def _bind_events(self):
         '''
