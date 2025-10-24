@@ -1,6 +1,7 @@
 # Project Files
 .idea/
 *.spec
+nexus/
 
 # Binary Files
 *.pyc
